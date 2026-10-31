@@ -124,12 +124,12 @@ export default function Navbar() {
               </svg>
             </button>
 
-            <button
-              type="button"
+            <Link
+              href="/login"
               className="hidden rounded-full border border-white/70 px-5 py-1.5 text-sm text-white transition-colors hover:bg-white hover:text-black sm:block"
             >
               Login
-            </button>
+            </Link>
 
             <Link
               href="/register"
@@ -202,12 +202,12 @@ export default function Navbar() {
               })}
             </ul>
             <div className="mt-3 flex flex-col gap-2 px-1">
-              <button
-                type="button"
+              <Link
+                href="/login"
                 className="rounded-full border border-white/70 px-5 py-2 text-sm text-white transition-colors hover:bg-white hover:text-black"
               >
                 Login
-              </button>
+              </Link>
               <Link
                 href="/register"
                 className="rounded-full bg-gold px-5 py-2 text-sm font-semibold text-black transition-colors hover:bg-gold-soft"
