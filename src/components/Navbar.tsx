@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: "/studios", label: "Explore Studios" },
   { href: "/how-it-works", label: "How It Works" },
   { href: "/about", label: "About Us" },
+  { href: "/dashboard", label: "Dashboard" }
 ];
 
 function LogoIcon({ className }: { className?: string }) {
