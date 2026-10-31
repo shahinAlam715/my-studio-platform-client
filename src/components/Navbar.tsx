@@ -131,12 +131,12 @@ export default function Navbar() {
               Login
             </button>
 
-            <button
-              type="button"
+            <Link
+              href="/register"
               className="hidden rounded-full bg-gold px-5 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-gold-soft sm:block"
             >
               Register
-            </button>
+            </Link>
 
             <button
               type="button"
@@ -208,12 +208,12 @@ export default function Navbar() {
               >
                 Login
               </button>
-              <button
-                type="button"
+              <Link
+                href="/register"
                 className="rounded-full bg-gold px-5 py-2 text-sm font-semibold text-black transition-colors hover:bg-gold-soft"
               >
                 Register
-              </button>
+              </Link>
             </div>
           </nav>
         )}
