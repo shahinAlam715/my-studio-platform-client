@@ -40,21 +40,37 @@ export default function StudioForm() {
   const [category, setCategory] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
 
-  function toggleAmenity(amenity: string) {
+ function toggleAmenity(amenity: string) {
     setAmenities((current) =>
       current.includes(amenity)
         ? current.filter((item) => item !== amenity)
         : [...current, amenity]
     );
+
   }
+
+  const handleSubmit = async(e: React.SubmitEvent<HTMLElement>)=>{
+    e.preventDefault()
+
+    const formData = new FormData(e.target)
+    const addStudio = Object.fromEntries(formData.entries())
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/studiodata`,{
+      method:"POST",
+      headers:{
+        "Content-Type" : "application/json"
+      },
+      body: JSON.stringify(addStudio)
+    })
+    const data = await res.json()
+    console.log(data);
+  }
+
 
   return (
     <form
       className="mt-8 space-y-5 rounded-2xl border border-white/5 bg-[#141414] p-6 sm:p-8"
-      onSubmit={(event) => {
-        event.preventDefault();
-        // TODO: send the studio listing to your backend
-      }}
+      onSubmit={handleSubmit}
     >
       {/* Title | Category */}
       <div className="grid gap-5 sm:grid-cols-2">
