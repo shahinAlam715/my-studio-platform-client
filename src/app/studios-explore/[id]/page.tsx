@@ -12,6 +12,7 @@ import {
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import UpdateStudio from "@/components/UpdateStudio";
+import DeleteStudio from "@/components/DeleteStudio";
 
 interface Studio {
   _id: string;
@@ -175,9 +176,7 @@ export default async function DetailsPage({
         {/* Update / Delete actions */}
         <div className="mt-5 flex flex-wrap items-start gap-3">
           <UpdateStudio studio={data} />
-          <Button variant="destructive" className="text-white">
-            Delete
-          </Button>
+          <DeleteStudio id={data._id}/>
         </div>
 
         {/* Studio Details */}
