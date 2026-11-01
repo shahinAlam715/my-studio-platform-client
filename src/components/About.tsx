@@ -1,3 +1,5 @@
+"use client";
+
 const CARDS = [
   {
     title: "Our mission",
@@ -15,12 +17,13 @@ const CARDS = [
 
 export default function About() {
   return (
-    <section className="bg-[#0b0b0b]">
+    <section className="bg-white transition-colors duration-300 dark:bg-[#0b0b0b]">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
-        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900 transition-colors duration-300 sm:text-4xl dark:text-white">
           About StudioSpace
         </h2>
-        <p className="mt-3 text-sm text-neutral-400 sm:text-base">
+
+        <p className="mt-3 text-sm text-gray-600 transition-colors duration-300 sm:text-base dark:text-neutral-400">
           We connect creators with the rooms that make great work possible.
         </p>
 
@@ -28,10 +31,13 @@ export default function About() {
           {CARDS.map((card) => (
             <div
               key={card.title}
-              className="rounded-xl border border-white/5 bg-[#161616] p-6"
+              className="rounded-xl border border-gray-200 bg-gray-50 p-6 transition-colors duration-300 dark:border-white/5 dark:bg-[#161616]"
             >
-              <h3 className="text-base font-bold text-white">{card.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                {card.title}
+              </h3>
+
+              <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-neutral-400">
                 {card.body}
               </p>
             </div>

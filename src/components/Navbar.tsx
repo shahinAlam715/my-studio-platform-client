@@ -1,18 +1,30 @@
 "use client";
 
+import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
+import { Menu, X, Sun, Moon, LogOut } from "lucide-react";
 
-// navbar er search option er jaigai theme icon diea replece koro and theme dark and white set koro clean code must
+import { Button } from "./ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/studios-explore", label: "Explore Studios" },
   { href: "/how-it-works", label: "How It Works" },
   { href: "/about", label: "About Us" },
-  { href: "/dashboard", label: "Dashboard" }
+  { href: "/dashboard", label: "Dashboard" },
 ];
+
+type UserSession = {
+  user: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+};
 
 function LogoIcon({ className }: { className?: string }) {
   return (
@@ -36,187 +48,216 @@ function LogoIcon({ className }: { className?: string }) {
   );
 }
 
-function MenuIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className="h-6 w-6 text-white"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-    >
-      {open ? (
-        <>
-          <path d="M6 6l12 12" />
-          <path d="M18 6 6 18" />
-        </>
-      ) : (
-        <>
-          <path d="M4 7h16" />
-          <path d="M4 12h16" />
-          <path d="M4 17h16" />
-        </>
-      )}
-    </svg>
-  );
-}
-
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme();
+
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [session, setSession] = useState<UserSession | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      try {
+        const { data, error } = await authClient.getSession();
+        if (!active) return;
+
+        if (error) {
+          console.error("Session Error:", error);
+          setSession(null);
+        } else {
+          setSession(data as UserSession | null);
+        }
+      } catch (error) {
+        if (active) {
+          console.error("Failed to get session:", error);
+          setSession(null);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Only runs on click, so reading resolvedTheme here is safe
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  };
+
+  const handleSignout = async () => {
+    if (signingOut) return;
+
+    try {
+      setSigningOut(true);
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        console.error("Sign Out Error:", error);
+        return;
+      }
+
+      setSession(null);
+      setMenuOpen(false);
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Sign Out Failed:", error);
+    } finally {
+      setSigningOut(false);
+    }
+  };
+
+  const user = session?.user;
+
+  const navLinkClass = (href: string) => {
+    const active =
+      pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+
+    return `rounded-lg text-sm transition-colors ${
+      active
+        ? "font-semibold text-gold"
+        : "text-gray-600 hover:text-gold dark:text-gray-300 dark:hover:text-gold"
+    }`;
+  };
+
+  const renderAuthButtons = (mobile = false) => {
+    if (loading) return null;
+
+    if (user) {
+      return (
+        <div className={`flex items-center gap-3 ${mobile ? "flex-wrap" : ""}`}>
+          <Avatar className="h-9 w-9 border border-gold/40">
+            {user.image && (
+              <AvatarImage src={user.image} alt={user.name || "User"} />
+            )}
+            <AvatarFallback className="bg-gold text-black">
+              {user.name?.charAt(0)?.toUpperCase() || "U"}
+            </AvatarFallback>
+          </Avatar>
+
+          <Button
+            type="button"
+            onClick={handleSignout}
+            disabled={signingOut}
+            className="rounded-full bg-gold px-5 text-sm font-semibold text-black hover:bg-gold-soft"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            {signingOut ? "Signing out..." : "Sign Out"}
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className={`flex gap-3 ${mobile ? "flex-col" : "items-center"}`}>
+        <Link
+          href="/login"
+          onClick={() => setMenuOpen(false)}
+          className="rounded-full border border-gray-400 px-5 py-2 text-center text-sm text-gray-800 transition-colors hover:bg-gray-100 dark:border-white/70 dark:text-white dark:hover:bg-white dark:hover:text-black"
+        >
+          Login
+        </Link>
+
+        <Link
+          href="/register"
+          onClick={() => setMenuOpen(false)}
+          className="rounded-full bg-gold px-5 py-2 text-center text-sm font-semibold text-black transition-colors hover:bg-gold-soft"
+        >
+          Register
+        </Link>
+      </div>
+    );
+  };
 
   return (
     <header className="sticky top-0 z-50">
-      <div className="border-b border-white/10 bg-black/90 backdrop-blur">
+      <div className="border-b border-gray-200 bg-white/90 backdrop-blur-xl dark:border-white/10 dark:bg-black/90">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-2">
             <LogoIcon className="h-7 w-7" />
             <span className="text-lg font-bold tracking-wide">
               <span className="text-gold">Studio</span>
-              <span className="text-white">Space</span>
+              <span className="text-gray-900 dark:text-white">Space</span>
             </span>
           </Link>
 
-          {/* Desktop links */}
-          <nav aria-label="Main" className="hidden items-center gap-8 lg:flex">
-            {NAV_LINKS.map((link) => {
-              const active = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm transition-colors ${
-                    active
-                      ? "font-medium text-gold"
-                      : "text-gray-300 hover:text-gold"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
+          {/* Desktop Navigation */}
+          <nav
+            aria-label="Main navigation"
+            className="hidden items-center gap-6 lg:flex xl:gap-8"
+          >
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={navLinkClass(link.href)}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
 
-          {/* Right cluster */}
+          {/* Right Actions */}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            {/* Theme Toggle: both icons rendered, CSS picks one (no hydration mismatch) */}
             <button
               type="button"
-              aria-label={searchOpen ? "Close search" : "Open search"}
-              aria-expanded={searchOpen}
-              onClick={() => {
-                setSearchOpen((v) => !v);
-                setMenuOpen(false);
-              }}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-gray-300 transition-colors hover:border-gold hover:text-gold"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              title="Toggle theme"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 text-gray-700 transition-all hover:border-gold hover:text-gold dark:border-white/20 dark:text-gray-200"
             >
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.2-3.2" />
-              </svg>
+              <Sun className="hidden h-5 w-5 dark:block" />
+              <Moon className="block h-5 w-5 dark:hidden" />
             </button>
 
-            <Link
-              href="/login"
-              className="hidden rounded-full border border-white/70 px-5 py-1.5 text-sm text-white transition-colors hover:bg-white hover:text-black sm:block"
-            >
-              Login
-            </Link>
+            {/* Desktop Auth */}
+            <div className="hidden sm:block">{renderAuthButtons()}</div>
 
-            <Link
-              href="/register"
-              className="hidden rounded-full bg-gold px-5 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-gold-soft sm:block"
-            >
-              Register
-            </Link>
-
+            {/* Mobile Menu Toggle */}
             <button
               type="button"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
-              onClick={() => {
-                setMenuOpen((v) => !v);
-                setSearchOpen(false);
-              }}
-              className="rounded-full p-1.5 transition-colors hover:bg-white/10 lg:hidden"
+              onClick={() => setMenuOpen((prev) => !prev)}
+              className="rounded-full p-2 text-gray-800 transition-colors hover:bg-gray-100 dark:text-white dark:hover:bg-white/10 lg:hidden"
             >
-              <MenuIcon open={menuOpen} />
+              {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
 
-        {/* Search bar */}
-        {searchOpen && (
-          <div className="border-t border-white/10 px-4 py-3 sm:px-6 lg:px-8">
-            <div className="mx-auto flex max-w-7xl items-center gap-2">
-              <input
-                autoFocus
-                type="search"
-                placeholder="Search studios..."
-                aria-label="Search studios"
-                className="w-full rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-gray-500 focus:border-gold focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => setSearchOpen(false)}
-                className="rounded-full border border-white/20 px-4 py-2 text-sm text-gray-300 transition-colors hover:border-gold hover:text-gold"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Mobile menu */}
+        {/* Mobile Navigation */}
         {menuOpen && (
           <nav
-            aria-label="Mobile"
-            className="border-t border-white/10 px-4 pb-4 pt-2 sm:px-6 lg:hidden"
+            aria-label="Mobile navigation"
+            className="border-t border-gray-200 bg-white px-4 pb-5 pt-3 dark:border-white/10 dark:bg-black lg:hidden"
           >
-            <ul className="flex flex-col">
-              {NAV_LINKS.map((link) => {
-                const active = pathname === link.href;
-                return (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      onClick={() => setMenuOpen(false)}
-                      className={`block rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                        active
-                          ? "font-medium text-gold"
-                          : "text-gray-300 hover:bg-white/5 hover:text-gold"
-                      }`}
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                );
-              })}
+            <ul className="flex flex-col gap-1">
+              {NAV_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    className={`block px-3 py-3 ${navLinkClass(link.href)}`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
-            <div className="mt-3 flex flex-col gap-2 px-1">
-              <Link
-                href="/login"
-                className="rounded-full border border-white/70 px-5 py-2 text-sm text-white transition-colors hover:bg-white hover:text-black"
-              >
-                Login
-              </Link>
-              <Link
-                href="/register"
-                className="rounded-full bg-gold px-5 py-2 text-sm font-semibold text-black transition-colors hover:bg-gold-soft"
-              >
-                Register
-              </Link>
+
+            <div className="mt-4 border-t border-gray-200 pt-4 dark:border-white/10">
+              {renderAuthButtons(true)}
             </div>
           </nav>
         )}

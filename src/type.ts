@@ -20,3 +20,23 @@ export type Studio = {
   instantBook: boolean;
   image: string;
 };
+
+
+
+export interface IBooking {
+  _id: string;
+  userName: string;
+  email: string;
+  image: string;
+  bookingdate: string;
+  studioId: string;
+  title: string;
+  category: string;
+  hourlyRate: string;
+  securityDeposit: string;
+  maxCapacity: string;
+  location: string;
+  imageUrl: string;
+  ownerName: string;
+  ownerEmail: string;
+}

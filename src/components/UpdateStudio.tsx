@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,14 +31,6 @@ const AMENITIES = [
   "Lighting kit",
 ];
 
-const inputClass =
-  "mt-2 h-11 w-full rounded-lg border-white/10 bg-[#1a1a1a] px-4 text-sm text-white placeholder:text-neutral-500 focus-visible:border-gold focus-visible:ring-gold/40";
-
-const textareaClass =
-  "mt-2 min-h-[160px] w-full rounded-lg border-white/10 bg-[#1a1a1a] px-4 py-3 text-sm text-white placeholder:text-neutral-500 focus-visible:border-gold focus-visible:ring-gold/40";
-
-const labelClass = "text-sm text-neutral-300";
-
 type StudioUpdate = {
   _id: string | { $oid: string };
   title: string;
@@ -58,19 +52,42 @@ type UpdateStudioProps = {
 
 export default function UpdateStudio({ studio }: UpdateStudioProps) {
   const router = useRouter();
+
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
   const [category, setCategory] = useState(studio.category);
-  const [amenities, setAmenities] = useState<string[]>(studio.amenities ?? []);
+  const [amenities, setAmenities] = useState<string[]>(
+    studio.amenities ?? []
+  );
 
-  // Keep amenities from the listing even if they are not in the defaults.
-  const amenityOptions = [...new Set([...AMENITIES, ...amenities])];
+  // Theme-aware classes
+  const inputClass =
+    "mt-2 h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus-visible:border-gold focus-visible:ring-gold/40 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-neutral-500";
 
-  // Mongo _id may arrive as extended JSON: { $oid: "..." }.
+  const textareaClass =
+    "mt-2 min-h-[160px] w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus-visible:border-gold focus-visible:ring-gold/40 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-neutral-500";
+
+  const labelClass = "text-sm text-gray-700 dark:text-neutral-300";
+
+  const formClass =
+    "border-gray-200 bg-white text-gray-900 shadow-sm dark:border-white/5 dark:bg-[#141414] dark:text-white";
+
+  const mutedTextClass = "text-gray-500 dark:text-neutral-400";
+
+  // Include custom amenities already saved in the database
+  const amenityOptions = [
+    ...new Set([...AMENITIES, ...amenities]),
+  ];
+
+  // MongoDB _id may arrive as extended JSON
   const studioId =
-    typeof studio._id === "string" ? studio._id : studio._id.$oid;
+    typeof studio._id === "string"
+      ? studio._id
+      : studio._id.$oid;
 
+  // Toggle amenities
   function toggleAmenity(amenity: string) {
     setAmenities((current) =>
       current.includes(amenity)
@@ -79,13 +96,26 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
     );
   }
 
+  // Update studio
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const form = event.currentTarget;
+
     setSaving(true);
     setError("");
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(form);
     const fields = Object.fromEntries(formData.entries());
+
+    const studioData = {
+      ...fields,
+      category,
+      amenities,
+      hourlyRate: Number(fields.hourlyRate),
+      securityDeposit: Number(fields.securityDeposit || 0),
+      maxCapacity: Number(fields.maxCapacity || 0),
+    };
 
     try {
       const res = await fetch(
@@ -95,15 +125,18 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ ...fields, category, amenities }),
+          body: JSON.stringify(studioData),
         }
       );
 
-      if (!res.ok) throw new Error("Request failed");
+      if (!res.ok) {
+        throw new Error("Failed to update studio");
+      }
 
       setOpen(false);
       router.refresh();
-    } catch {
+    } catch (err) {
+      console.error("Update studio error:", err);
       setError("Could not save changes. Please try again.");
     } finally {
       setSaving(false);
@@ -112,22 +145,31 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
 
   return (
     <>
+      {/* Update Button */}
       <Button
         type="button"
         className="bg-amber-500 text-black hover:bg-amber-400"
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          setError("");
+          setOpen((current) => !current);
+        }}
       >
         Update
       </Button>
 
+      {/* Update Form */}
       {open && (
         <form
-          className="w-full space-y-5 rounded-2xl border border-white/5 bg-[#141414] p-6 sm:p-8"
           onSubmit={handleSubmit}
+          className={`w-full space-y-5 rounded-2xl border p-6 transition-colors sm:p-8 ${formClass}`}
         >
+          {/* Header */}
           <header>
-            <h2 className="text-xl font-bold sm:text-2xl">Update studio</h2>
-            <p className="mt-1 text-sm text-neutral-400">
+            <h2 className="text-xl font-bold sm:text-2xl">
+              Update studio
+            </h2>
+
+            <p className={`mt-1 text-sm ${mutedTextClass}`}>
               Edit your listing details.
             </p>
           </header>
@@ -138,6 +180,7 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
               <label htmlFor="update-title" className={labelClass}>
                 Title
               </label>
+
               <Input
                 id="update-title"
                 name="title"
@@ -147,23 +190,29 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
                 className={inputClass}
               />
             </div>
+
             <div>
               <label htmlFor="update-category" className={labelClass}>
                 Category
               </label>
+
               <Select
                 value={category}
-                onValueChange={(value) => setCategory(value ?? "")}
+                onValueChange={(value) => setCategory(value)}
               >
                 <SelectTrigger
                   id="update-category"
-                  className={`w-full justify-between ${inputClass}`}
+                  className={inputClass}
                 >
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
+
                 <SelectContent>
                   {CATEGORY_OPTIONS.map((option) => (
-                    <SelectItem key={option.slug} value={option.slug}>
+                    <SelectItem
+                      key={option.slug}
+                      value={option.slug}
+                    >
                       {option.label}
                     </SelectItem>
                   ))}
@@ -175,9 +224,13 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
           {/* Rates */}
           <div className="grid gap-5 sm:grid-cols-3">
             <div>
-              <label htmlFor="update-hourly-rate" className={labelClass}>
+              <label
+                htmlFor="update-hourly-rate"
+                className={labelClass}
+              >
                 Hourly rate ($)
               </label>
+
               <Input
                 id="update-hourly-rate"
                 name="hourlyRate"
@@ -188,10 +241,15 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
                 className={inputClass}
               />
             </div>
+
             <div>
-              <label htmlFor="update-security-deposit" className={labelClass}>
+              <label
+                htmlFor="update-security-deposit"
+                className={labelClass}
+              >
                 Security deposit ($)
               </label>
+
               <Input
                 id="update-security-deposit"
                 name="securityDeposit"
@@ -201,10 +259,15 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
                 className={inputClass}
               />
             </div>
+
             <div>
-              <label htmlFor="update-max-capacity" className={labelClass}>
+              <label
+                htmlFor="update-max-capacity"
+                className={labelClass}
+              >
                 Max capacity
               </label>
+
               <Input
                 id="update-max-capacity"
                 name="maxCapacity"
@@ -221,6 +284,7 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
             <label htmlFor="update-location" className={labelClass}>
               Location / address
             </label>
+
             <Input
               id="update-location"
               name="location"
@@ -236,6 +300,7 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
             <label htmlFor="update-image-url" className={labelClass}>
               Image URL
             </label>
+
             <Input
               id="update-image-url"
               name="imageUrl"
@@ -247,10 +312,14 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
 
           {/* Amenities */}
           <fieldset>
-            <legend className={labelClass}>Amenities</legend>
+            <legend className={labelClass}>
+              Amenities
+            </legend>
+
             <div className="mt-2.5 flex flex-wrap gap-2.5">
               {amenityOptions.map((amenity) => {
                 const selected = amenities.includes(amenity);
+
                 return (
                   <button
                     key={amenity}
@@ -260,7 +329,7 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
                     className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
                       selected
                         ? "border-gold bg-gold/15 text-gold"
-                        : "border-white/20 bg-[#1a1a1a] text-neutral-300 hover:border-gold/50"
+                        : "border-gray-200 bg-gray-50 text-gray-700 hover:border-gold/50 dark:border-white/20 dark:bg-[#1a1a1a] dark:text-neutral-300 dark:hover:border-gold/50"
                     }`}
                   >
                     {amenity}
@@ -275,6 +344,7 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
             <label htmlFor="update-overview" className={labelClass}>
               Detailed overview
             </label>
+
             <Textarea
               id="update-overview"
               name="overview"
@@ -283,12 +353,16 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
             />
           </div>
 
-          {/* Owner */}
+          {/* Owner Information */}
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label htmlFor="update-owner-name" className={labelClass}>
+              <label
+                htmlFor="update-owner-name"
+                className={labelClass}
+              >
                 Owner name
               </label>
+
               <Input
                 id="update-owner-name"
                 name="ownerName"
@@ -297,10 +371,15 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
                 className={inputClass}
               />
             </div>
+
             <div>
-              <label htmlFor="update-owner-email" className={labelClass}>
+              <label
+                htmlFor="update-owner-email"
+                className={labelClass}
+              >
                 Owner email
               </label>
+
               <Input
                 id="update-owner-email"
                 name="ownerEmail"
@@ -311,12 +390,14 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
             </div>
           </div>
 
+          {/* Error Message */}
           {error && (
-            <p className="text-sm text-red-400" role="alert">
+            <p className="text-sm text-red-500" role="alert">
               {error}
             </p>
           )}
 
+          {/* Action Buttons */}
           <div className="flex flex-wrap gap-3">
             <Button
               type="submit"
@@ -325,10 +406,12 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
             >
               {saving ? "Saving..." : "Save Changes"}
             </Button>
+
             <Button
               type="button"
               variant="outline"
-              className="h-11 rounded-full px-7 text-sm"
+              disabled={saving}
+              className="h-11 rounded-full border-gray-300 px-7 text-sm text-gray-700 hover:bg-gray-100 dark:border-white/20 dark:text-white dark:hover:bg-white/10"
               onClick={() => setOpen(false)}
             >
               Cancel

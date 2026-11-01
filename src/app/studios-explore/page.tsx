@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -54,6 +55,7 @@ const SORT_OPTIONS = [
   { value: "price-desc", label: "Price: high to low" },
 ];
 
+// Convert API data into Studio format
 function mapStudio(item: ApiStudio): Studio {
   return {
     id: typeof item._id === "string" ? item._id : item._id.$oid,
@@ -66,25 +68,30 @@ function mapStudio(item: ApiStudio): Studio {
   };
 }
 
-const controlClass =
-  "h-10 w-full rounded-md border border-white/10 bg-[#1a1a1a] px-3 text-sm text-neutral-300 outline-none placeholder:text-neutral-500 focus:border-amber-400";
-
-function StudioImage({ src, alt }: { src?: string; alt: string }) {
-  const [failed, setFailed] = useState(false);
+// Studio Image Component
+function StudioImage({
+  src,
+  alt,
+}: {
+  src?: string;
+  alt: string;
+}) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
   return (
     <>
-      {src && !failed && (
+      {src && failedSrc !== src && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src}
           alt={alt}
-          onError={() => setFailed(true)}
+          onError={() => setFailedSrc(src)}
           className="absolute inset-0 h-full w-full object-cover"
         />
       )}
-      {(!src || failed) && (
-        <span className="absolute bottom-3 left-3 text-[10px] text-neutral-400">
+
+      {(!src || failedSrc === src) && (
+        <span className="absolute bottom-3 left-3 text-[10px] text-neutral-500 dark:text-neutral-400">
           Studio photo
         </span>
       )}
@@ -100,25 +107,37 @@ export default function ExploreStudios() {
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
+
   const [category, setCategory] = useState(
     () => searchParams.get("category") ?? "all"
   );
+
   const [price, setPrice] = useState("all");
   const [sort, setSort] = useState("rated");
 
-  // Fetch studios (client side)
+  // Fetch Studios from API
   useEffect(() => {
     const controller = new AbortController();
 
     async function loadStudios() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/studiodata`, {
+        setLoading(true);
+        setError(null);
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/studiodata`,
+          {
             cache: "no-store",
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+            signal: controller.signal,
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error(`Request failed: ${res.status}`);
+        }
+
         const data: ApiStudio[] = await res.json();
-        console.log(data);
+
         setStudios(data.map(mapStudio));
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
@@ -126,48 +145,83 @@ export default function ExploreStudios() {
           setError("Could not load studios. Please try again later.");
         }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
 
     loadStudios();
-   
+
+    
   }, []);
 
+  // Search, Filter and Sort
   const results = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    const list = studios.filter((s) => {
+    const filtered = studios.filter((studio) => {
       const matchesSearch =
         !query ||
-        s.name.toLowerCase().includes(query) ||
-        s.location.toLowerCase().includes(query);
-      const matchesCategory = category === "all" || s.category === category;
+        studio.name.toLowerCase().includes(query) ||
+        studio.location.toLowerCase().includes(query);
+
+      const matchesCategory =
+        category === "all" || studio.category === category;
+
       const matchesPrice =
         price === "all" ||
-        (price === "under-30" && s.price < 30) ||
-        (price === "30-60" && s.price >= 30 && s.price <= 60) ||
-        (price === "over-60" && s.price > 60);
+        (price === "under-30" && studio.price < 30) ||
+        (price === "30-60" &&
+          studio.price >= 30 &&
+          studio.price <= 60) ||
+        (price === "over-60" && studio.price > 60);
+
       return matchesSearch && matchesCategory && matchesPrice;
     });
 
-    if (sort === "price-asc") list.sort((a, b) => a.price - b.price);
-    else if (sort === "price-desc") list.sort((a, b) => b.price - a.price);
-    else list.sort((a, b) => b.rating - a.rating);
+    return [...filtered].sort((a, b) => {
+      if (sort === "price-asc") {
+        return a.price - b.price;
+      }
 
-    return list;
+      if (sort === "price-desc") {
+        return b.price - a.price;
+      }
+
+      return b.rating - a.rating;
+    });
   }, [studios, search, category, price, sort]);
 
-  return (
-    <main className="min-h-screen bg-[#0f0f0f] px-4 py-10 text-white">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="text-3xl font-bold md:text-4xl">Explore studios</h1>
-        <p className="mt-2 text-sm text-neutral-400">
-          Filter by category, price and location to find the right space.
-        </p>
+  // Light and Dark Theme Classes
+  const controlClass =
+    "h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none transition-colors placeholder:text-gray-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-neutral-300 dark:placeholder:text-neutral-500";
 
-        {/* Filter bar */}
+  const cardClass =
+    "border-gray-200 bg-white shadow-sm dark:border-white/5 dark:bg-[#161616]";
+
+  const headingClass = "text-gray-900 dark:text-white";
+
+  const descriptionClass = "text-gray-500 dark:text-neutral-400";
+
+  return (
+    <main className="min-h-screen bg-gray-50 px-4 py-10 text-gray-900 transition-colors dark:bg-[#0f0f0f] dark:text-white">
+      <div className="mx-auto max-w-6xl">
+        {/* Heading */}
+        <div>
+          <h1 className="text-3xl font-bold md:text-4xl">
+            Explore studios
+          </h1>
+
+          <p className={`mt-2 text-sm ${descriptionClass}`}>
+            Filter by category, price and location to find
+            the right space.
+          </p>
+        </div>
+
+        {/* Filter Bar */}
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Search */}
           <input
             type="search"
             placeholder="Search by name or location"
@@ -176,90 +230,147 @@ export default function ExploreStudios() {
             onChange={(e) => setSearch(e.target.value)}
             className={controlClass}
           />
+
+          {/* Category Filter */}
           <select
             aria-label="Category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className={controlClass}
           >
-            {CATEGORY_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
+            {CATEGORY_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
+
+          {/* Price Filter */}
           <select
             aria-label="Price"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             className={controlClass}
           >
-            {PRICE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
+            {PRICE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
+
+          {/* Sorting */}
           <select
             aria-label="Sort"
             value={sort}
             onChange={(e) => setSort(e.target.value)}
             className={controlClass}
           >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
+            {SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
         </div>
 
-        {/* Results */}
+        {/* Result Count */}
+        {!loading && !error && (
+          <p className={`mt-5 text-xs ${descriptionClass}`}>
+            Showing {results.length} of {studios.length} studios
+          </p>
+        )}
+
+        {/* Loading, Error and Results */}
         {loading ? (
-          <p className="mt-10 text-sm text-neutral-400">Loading studios...</p>
-        ) : error ? (
-          <p className="mt-10 text-sm text-red-400">{error}</p>
-        ) : results.length === 0 ? (
-          <div className="mt-10 rounded-xl border border-white/5 bg-[#161616] p-10 text-center">
-            <p className="font-semibold">No studios found</p>
-            <p className="mt-1 text-sm text-neutral-400">
-              Try changing your search or filters.
+          <div className="mt-10 py-10 text-center">
+            <p className={`text-sm ${descriptionClass}`}>
+              Loading studios...
             </p>
           </div>
+        ) : error ? (
+          /* Error State */
+          <div className="mt-10 rounded-xl border border-red-500/20 bg-red-500/5 p-10 text-center">
+            <p className="text-sm text-red-500">{error}</p>
+          </div>
+        ) : results.length === 0 ? (
+          /* Empty State */
+          <div
+            className={`mt-10 rounded-xl border p-10 text-center ${cardClass}`}
+          >
+            <h2 className={`font-semibold ${headingClass}`}>
+              No studios found
+            </h2>
+
+            <p className={`mt-2 text-sm ${descriptionClass}`}>
+              Try changing your search or filters.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setCategory("all");
+                setPrice("all");
+                setSort("rated");
+              }}
+              className="mt-5 rounded-full bg-amber-500 px-5 py-2 text-xs font-semibold text-black transition hover:bg-amber-400"
+            >
+              Clear Filters
+            </button>
+          </div>
         ) : (
+          /* Studio Cards */
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {results.map((studio) => (
               <article
                 key={studio.id}
-                className="overflow-hidden rounded-xl border border-white/5 bg-[#161616] transition-colors hover:border-amber-400/40"
+                className={`overflow-hidden rounded-xl border transition-colors hover:border-amber-400/50 ${cardClass}`}
               >
-                <div className="relative h-36 bg-gradient-to-br from-amber-900/30 via-[#1c1c1c] to-[#161616]">
-                  <StudioImage src={studio.image} alt={studio.name} />
+                {/* Studio Image */}
+                <div className="relative h-40 bg-gradient-to-br from-amber-900/30 via-gray-200 to-gray-100 dark:via-[#1c1c1c] dark:to-[#161616]">
+                  <StudioImage
+                    src={studio.image}
+                    alt={studio.name}
+                  />
+
                   <div
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"
                   />
-                  <span className="absolute top-3 left-3 rounded-full bg-amber-400 px-2.5 py-0.5 text-[10px] font-bold text-black">
+
+                  {/* Category Badge */}
+                  <span className="absolute left-3 top-3 rounded-full bg-amber-400 px-2.5 py-1 text-[10px] font-bold text-black">
                     {BADGE_LABELS[studio.category] ?? "Studio"}
                   </span>
-                  <span className="absolute top-3 right-3 rounded-full bg-black/70 px-2.5 py-0.5 text-[10px] font-semibold text-white">
+
+                  {/* Hourly Price */}
+                  <span className="absolute right-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-semibold text-white">
                     ${studio.price} / hr
                   </span>
                 </div>
 
+                {/* Card Content */}
                 <div className="p-4">
-                  <h2 className="font-bold text-white">{studio.name}</h2>
-                  <p className="mt-1 text-xs text-neutral-400">
+                  <h2 className={`font-bold ${headingClass}`}>
+                    {studio.name}
+                  </h2>
+
+                  <p className={`mt-1 text-xs ${descriptionClass}`}>
                     {studio.location}
                   </p>
+
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="flex items-center gap-1 text-sm text-neutral-300">
+                    {/* Rating */}
+                    <span className="flex items-center gap-1 text-sm text-gray-600 dark:text-neutral-300">
                       <span className="text-amber-400">★</span>
                       {studio.rating.toFixed(1)}
                     </span>
+
+                    {/* Details Link */}
                     <Link
                       href={`/studios-explore/${studio.id}`}
-                      className="rounded-full border border-white/20 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:border-amber-400 hover:text-amber-400"
+                      className="rounded-full border border-gray-300 px-4 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-amber-500 hover:text-amber-600 dark:border-white/20 dark:text-white dark:hover:border-amber-400 dark:hover:text-amber-400"
                     >
                       View Details
                     </Link>

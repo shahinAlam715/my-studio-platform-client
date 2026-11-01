@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+
 import {
   Carousel,
   CarouselContent,
@@ -51,43 +52,65 @@ const GOLD_GLOW =
 export default function Hero() {
   const [api, setApi] = useState<CarouselApi>();
   const [selected, setSelected] = useState(0);
+
   const pausedRef = useRef(false);
 
-  // Track the active slide for the custom indicators.
+  // Track the active slide for custom indicators.
   useEffect(() => {
     if (!api) return;
-    const onSelect = () => setSelected(api.selectedScrollSnap());
+
+    const onSelect = () => {
+      setSelected(api.selectedScrollSnap());
+    };
+
     api.on("select", onSelect);
     api.on("reInit", onSelect);
+
     return () => {
       api.off("select", onSelect);
       api.off("reInit", onSelect);
     };
   }, [api]);
 
-  // Autoplay, paused while the user hovers the hero.
+  // Autoplay, paused while user hovers the hero.
   useEffect(() => {
     if (!api) return;
+
     const id = setInterval(() => {
-      if (!pausedRef.current) api.scrollNext();
+      if (!pausedRef.current) {
+        api.scrollNext();
+      }
     }, 6000);
+
     return () => clearInterval(id);
   }, [api]);
 
   return (
     <section
-      className="relative isolate overflow-hidden bg-[#0b0b0b]"
-      onMouseEnter={() => (pausedRef.current = true)}
-      onMouseLeave={() => (pausedRef.current = false)}
+      className="bg-white text-gray-900 dark:bg-black dark:text-white"
+      onMouseEnter={() => {
+        pausedRef.current = true;
+      }}
+      onMouseLeave={() => {
+        pausedRef.current = false;
+      }}
     >
-      <Carousel setApi={setApi} opts={{ loop: true, duration: 30 }}>
+      <Carousel
+        setApi={setApi}
+        opts={{
+          loop: true,
+          duration: 30,
+        }}
+      >
         <CarouselContent>
           {SLIDES.map((slide, index) => {
             const Heading = index === 0 ? "h1" : "h2";
+
             return (
               <CarouselItem key={slide.eyebrow}>
                 <div className="relative min-h-[560px] sm:min-h-[600px] lg:min-h-[680px]">
-                  {/* Banner */}
+
+                  {/* Banner Image */}
                   <Image
                     src={slide.image}
                     alt={slide.imageAlt}
@@ -96,32 +119,44 @@ export default function Hero() {
                     sizes="100vw"
                     className="object-cover"
                   />
-                  {/* Overlays: darken for readability + brand glow */}
+
+                  {/* Main Overlay */}
                   <div
                     aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/40"
+                    className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-white/40 transition-colors duration-300 dark:from-black dark:via-black/85 dark:to-black/40"
                   />
+
+                  {/* Bottom and Top Overlay */}
                   <div
                     aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60"
+                    className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-white/60 transition-colors duration-300 dark:from-black dark:to-black/60"
                   />
+
+                  {/* Gold Glow */}
                   <div
                     aria-hidden="true"
                     className="absolute inset-0"
-                    style={{ background: GOLD_GLOW }}
+                    style={{
+                      background: GOLD_GLOW,
+                    }}
                   />
 
                   {/* Content */}
                   <div className="relative mx-auto flex min-h-[560px] max-w-7xl flex-col justify-center px-6 pt-20 pb-28 sm:min-h-[600px] sm:px-6 lg:min-h-[680px] lg:px-8">
+
                     <p className="text-xs font-bold tracking-[0.18em] text-gold uppercase sm:text-sm">
                       {slide.eyebrow}
                     </p>
-                    <Heading className="mt-4 max-w-3xl text-4xl leading-[1.05] font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+
+                    <Heading className="mt-4 max-w-3xl text-4xl leading-[1.05] font-bold tracking-tight text-gray-950 transition-colors duration-300 sm:text-5xl lg:text-6xl dark:text-white">
                       {slide.headline}
                     </Heading>
-                    <p className="mt-5 max-w-xl text-sm leading-relaxed text-neutral-300 sm:text-base">
+
+                    <p className="mt-5 max-w-xl text-sm leading-relaxed text-gray-700 transition-colors duration-300 sm:text-base dark:text-neutral-300">
                       {slide.body}
                     </p>
+
+                    {/* Buttons */}
                     <div className="mt-8 flex flex-wrap gap-3">
                       <Link
                         href="/studios"
@@ -129,9 +164,10 @@ export default function Hero() {
                       >
                         Explore Studios
                       </Link>
+
                       <Link
                         href="/host"
-                        className="inline-flex h-11 items-center justify-center rounded-full border border-white/70 px-7 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-black"
+                        className="inline-flex h-11 items-center justify-center rounded-full border border-gray-800 px-7 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-900 hover:text-white dark:border-white/70 dark:text-white dark:hover:bg-white dark:hover:text-black"
                       >
                         Host Your Space
                       </Link>
@@ -143,7 +179,7 @@ export default function Hero() {
           })}
         </CarouselContent>
 
-        {/* Custom dash indicators (screenshot style) */}
+        {/* Custom Dash Indicators */}
         <div className="absolute right-0 bottom-8 left-0">
           <div className="mx-auto flex max-w-7xl items-center gap-2 px-6 lg:px-8">
             {SLIDES.map((slide, index) => (
@@ -151,12 +187,12 @@ export default function Hero() {
                 key={slide.eyebrow}
                 type="button"
                 aria-label={`Go to slide ${index + 1}: ${slide.eyebrow}`}
-                aria-current={index === selected}
+                aria-current={index === selected ? "true" : undefined}
                 onClick={() => api?.scrollTo(index)}
                 className={`h-1 rounded-full transition-all ${
                   index === selected
                     ? "w-10 bg-gold"
-                    : "w-7 bg-white/25 hover:bg-white/40"
+                    : "w-7 bg-gray-400/50 hover:bg-gray-500/70 dark:bg-white/25 dark:hover:bg-white/40"
                 }`}
               />
             ))}
@@ -166,3 +202,5 @@ export default function Hero() {
     </section>
   );
 }
+
+
