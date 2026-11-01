@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 
 const inputClass =
   "mt-2 h-11 rounded-lg border-white/10 bg-[#1a1a1a] px-4 text-sm text-white placeholder:text-neutral-500 focus-visible:border-gold focus-visible:ring-gold/40";
@@ -11,6 +12,29 @@ const inputClass =
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  
+    const handleSubmit = async(e: React.SubmitEvent<HTMLElement>)=>{
+        e.preventDefault()
+       
+  
+        const formData = new FormData(e.target)
+        const userData = Object.fromEntries(formData.entries()) as {name: string, email: string, image:string, password:string}
+        console.log(userData);
+  
+        const { data, error } = await authClient.signIn.email({
+         ...userData
+      })
+      
+    }
+      const handleGoogle = async()=>{
+          const data = await authClient.signIn.social({
+          provider: "google",
+        });
+        console.log(data);
+        }
+      
+       
 
   return (
     <section className="bg-[#0b0b0b]">
@@ -31,10 +55,7 @@ export default function LoginPage() {
 
           <form
             className="mt-6 space-y-5"
-            onSubmit={(event) => {
-              event.preventDefault();
-              // TODO: wire to your auth backend / login action
-            }}
+            onSubmit={handleSubmit}
           >
             <div>
               <label htmlFor="email" className="text-sm text-neutral-300">
@@ -42,6 +63,7 @@ export default function LoginPage() {
               </label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 autoComplete="email"
                 required
@@ -58,6 +80,7 @@ export default function LoginPage() {
               </label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 autoComplete="current-password"
                 required
@@ -82,6 +105,7 @@ export default function LoginPage() {
               Login
             </Button>
             <Button
+            onClick={handleGoogle}
               type="button"
               variant="outline"
               className="h-11 w-full rounded-full border-white/20 bg-transparent text-sm font-semibold text-white hover:bg-white/5"
