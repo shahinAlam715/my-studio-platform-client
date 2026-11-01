@@ -2,15 +2,16 @@
 import Link from "next/link";
 import {
   ArrowLeft,
-  CalendarDays,
   MapPin,
   ShieldCheck,
   Users,
   Clock,
   Star,
   UserRound,
-  Wifi,
 } from "lucide-react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import UpdateStudio from "@/components/UpdateStudio";
 
 interface Studio {
   _id: string;
@@ -97,9 +98,11 @@ export default async function DetailsPage({
           {/* Image Gallery */}
           <div className="min-w-0">
             <div className="relative h-32 overflow-hidden rounded-lg bg-[#202020] sm:h-52 md:h-80">
-              <img
+              <Image
                 src={data.imageUrl}
                 alt={data.title}
+                height={400}
+                width={400}
                 className="h-full w-full object-cover"
               />
 
@@ -114,9 +117,11 @@ export default async function DetailsPage({
                   key={index}
                   className="h-12 overflow-hidden rounded-md bg-[#242424] sm:h-20"
                 >
-                  <img
+                  <Image
                     src={image}
                     alt={`${data.title} ${index + 1}`}
+                    height={100}
+                    width={100}
                     className="h-full w-full object-cover"
                   />
                 </div>
@@ -164,6 +169,15 @@ export default async function DetailsPage({
               Secure booking experience
             </p>
           </div>
+
+        </div>
+
+        {/* Update / Delete actions */}
+        <div className="mt-5 flex flex-wrap items-start gap-3">
+          <UpdateStudio studio={data} />
+          <Button variant="destructive" className="text-white">
+            Delete
+          </Button>
         </div>
 
         {/* Studio Details */}
@@ -171,7 +185,7 @@ export default async function DetailsPage({
 
           {/* Category */}
           <span className="inline-block rounded-full bg-amber-500 px-2 py-1 text-[9px] font-semibold text-black">
-            {data.category.replace("-", " ")}
+            {data.category?.replace("-", " ") || "Unknown"}
           </span>
 
           {/* Title */}

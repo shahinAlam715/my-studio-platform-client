@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+// navbar er search option er jaigai theme icon diea replece koro and theme dark and white set koro clean code must
+
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/studios-explore", label: "Explore Studios" },
