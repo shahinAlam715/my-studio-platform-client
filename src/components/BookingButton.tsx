@@ -1,30 +1,56 @@
-
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 import type { BookingButtonProps } from "@/type";
+import toast from "react-hot-toast";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function BookingButton({ studio }: BookingButtonProps) {
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
   const router = useRouter();
 
+  // Handle booking confirmation
   const handleBooking = async () => {
     try {
       setLoading(true);
-      setMessage("");
 
+      // Get logged-in user session
       const { data: session } = await authClient.getSession();
       const user = session?.user;
 
-      
+      // Check authentication
+      if (!user?.email) {
+        toast.error("Please login first!");
+        return;
+      }
 
-      const info = {
-        userName: user?.name,
-        email: user?.email,
-        image: user?.image,
+      // Get authentication token
+      const token = await getTokenFromClient();
+
+      if (!token) {
+        toast.error("Authentication token not found. Please login again.");
+        return;
+      }
+
+      // Booking information
+      const bookingInfo = {
+        userName: user.name,
+        email: user.email,
+        image: user.image || "/images/default-user.png",
         bookingdate: new Date().toISOString(),
         studioId: studio._id,
         title: studio.title,
@@ -38,48 +64,79 @@ export default function BookingButton({ studio }: BookingButtonProps) {
         ownerEmail: studio.ownerEmail,
       };
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bookings`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(info),
+      // Send booking request to backend
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify(bookingInfo),
+      });
 
-      if (!res.ok) {
-        throw new Error("Booking could not be completed.");
+      const data = await res.json();
+
+      // Check duplicate booking
+      if (res.status === 409) {
+        toast.error(data.message || "You have already booked this studio!");
+        router.push(`/studios-explore/${studio._id}`);
+        return;
       }
 
-      setMessage("Booking successful!");
-      router.push('/dashboard')
+      // Check other API errors
+      if (!res.ok) {
+        throw new Error(data.message || `Booking failed: ${res.status}`);
+      }
+
+      // Booking successful
+      toast.success("Booking successful!");
+      router.push("/dashboard");
       router.refresh();
     } catch (error) {
-      console.error("Booking error:", error);
-      setMessage("Booking failed. Please try again.");
+      console.error("Booking Error:", error);
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Booking failed. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <>
-      <button
-        onClick={handleBooking}
-        type="button"
-        disabled={loading}
-        className="mt-5 w-full rounded-full bg-amber-500 py-3 text-xs font-semibold text-black transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {loading ? "Booking..." : "Book Workspace Now"}
-      </button>
+    <AlertDialog>
+      <AlertDialogTrigger
+        render={
+          <button
+            type="button"
+            disabled={loading}
+            className="mt-5 w-full rounded-full bg-amber-500 py-3 text-xs font-semibold text-black transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? "Booking..." : "Book Workspace Now"}
+          </button>
+        }
+      />
 
-      {message && (
-        <p className="mt-2 text-center text-xs text-gray-600 dark:text-gray-400">
-          {message}
-        </p>
-      )}
-    </>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirm Your Booking</AlertDialogTitle>
+
+          <AlertDialogDescription>
+            Are you sure you want to book {studio.title}? Please confirm to
+            continue with your booking.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+
+          <AlertDialogAction onClick={handleBooking} disabled={loading}>
+            {loading ? "Booking..." : "Confirm Booking"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

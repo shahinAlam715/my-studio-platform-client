@@ -16,8 +16,12 @@ import DeleteStudio from "@/components/DeleteStudio";
 import BookingButton from "@/components/BookingButton";
 import { authClient } from "@/lib/auth-client";
 import type { DetailsPageProps, StudioDetail } from "@/type";
+import { getTokenFromserver } from "@/lib/getTokenFromserver";
 
 export default async function DetailsPage({ params }: DetailsPageProps) {
+
+  // secure api
+  const token = await getTokenFromserver()
 
   const { data: session } = await authClient.getSession()
   const user = session?.user
@@ -27,7 +31,9 @@ export default async function DetailsPage({ params }: DetailsPageProps) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/studiodata/${id}`,
     {
-      cache: "no-store",
+      headers: {
+        authorization: `Bearer ${token}`
+      },
     },
   );
 

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,15 +23,13 @@ export default function LoginPage() {
     "mt-2 h-11 rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-gold focus-visible:ring-gold/40 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-neutral-500";
 
   // Email and password login
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (loading) return;
 
     setLoading(true);
-    setErrorMessage("");
+    toast.success("Registration Successfull!");
 
     try {
       const { error } = await authClient.signIn.email({
@@ -39,20 +38,14 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setErrorMessage(
-          error.message || "Invalid email or password."
-        );
-        return;
+        toast.error("Invalid email or password!");
       }
 
       router.push("/");
       router.refresh();
     } catch (error) {
+      toast.error("Something went wrong. Please try again");
       console.error("Login error:", error);
-
-      setErrorMessage(
-        "Something went wrong. Please try again."
-      );
     } finally {
       setLoading(false);
     }
@@ -63,8 +56,7 @@ export default function LoginPage() {
     if (googleLoading) return;
 
     setGoogleLoading(true);
-    setErrorMessage("");
-
+    toast.success("Google registration Success!");
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
@@ -72,16 +64,11 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setErrorMessage(
-          error.message || "Google login failed."
-        );
+        toast.error("Google registration failed.");
       }
     } catch (error) {
-      console.error("Google login error:", error);
-
-      setErrorMessage(
-        "Unable to login with Google. Please try again."
-      );
+      toast.error("Unable to register with Google. Please try again.");
+      console.error("Login error:", error);
     } finally {
       setGoogleLoading(false);
     }
@@ -90,7 +77,6 @@ export default function LoginPage() {
   return (
     <section className="min-h-screen bg-gray-50 transition-colors duration-300 dark:bg-[#0b0b0b]">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 lg:grid-cols-2 lg:px-8 lg:py-24">
-
         {/* Pitch */}
         <div className="max-w-md">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
@@ -108,10 +94,7 @@ export default function LoginPage() {
             Login
           </h2>
 
-          <form
-            className="mt-6 space-y-5"
-            onSubmit={handleSubmit}
-          >
+          <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
             {/* Email */}
             <div>
               <label
@@ -166,10 +149,7 @@ export default function LoginPage() {
 
             {/* Error message */}
             {errorMessage && (
-              <p
-                role="alert"
-                className="text-sm text-red-500"
-              >
+              <p role="alert" className="text-sm text-red-500">
                 {errorMessage}
               </p>
             )}
@@ -191,9 +171,7 @@ export default function LoginPage() {
               variant="outline"
               className="h-11 w-full rounded-full border-gray-300 bg-white text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100 dark:border-white/20 dark:bg-transparent dark:text-white dark:hover:bg-white/5"
             >
-              {googleLoading
-                ? "Connecting..."
-                : "Continue with Google"}
+              {googleLoading ? "Connecting..." : "Continue with Google"}
             </Button>
           </form>
 

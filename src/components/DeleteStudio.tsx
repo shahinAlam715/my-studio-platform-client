@@ -17,12 +17,17 @@ import {
 
 import { Button } from "@/components/ui/button";
 import type { DeleteStudioProps } from "@/type";
+import toast from "react-hot-toast";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 export default function DeleteStudio({ id }: DeleteStudioProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
+
+    const token = await getTokenFromClient()
+
     try {
       setLoading(true);
 
@@ -30,11 +35,18 @@ export default function DeleteStudio({ id }: DeleteStudioProps) {
         `${process.env.NEXT_PUBLIC_API_URL}/studiodata/${id}`,
         {
           method: "DELETE",
+          headers: {
+            authorization: `Bearer ${token}`
+          }
         }
       );
 
+      if (res.ok) {
+         toast.success("Success to delete studio!")
+      }
+
       if (!res.ok) {
-        throw new Error("Failed to delete studio");
+        toast.error("Failed to delete studio!");
       }
 
       router.push("/studios-explore");

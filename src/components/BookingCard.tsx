@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import type { BookingCardProps } from "@/type";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function BookingCard({ booking }: BookingCardProps) {
      const [loading, setLoading] = useState(false);
@@ -38,9 +39,11 @@ export default function BookingCard({ booking }: BookingCardProps) {
             method: "DELETE",
         }
     );
-    
+    if (res.ok) {
+      toast.success("Success to delete Booking!")
+    }
     if (!res.ok) {
-        throw new Error("Failed to delete studio");
+        toast.error("Faild to delete Booking!")
     }
     router.push("/studios-explore")
     router.refresh();
@@ -156,20 +159,6 @@ export default function BookingCard({ booking }: BookingCardProps) {
         {/* Customer and Owner */}
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex min-w-0 items-center gap-2">
-            <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-[#303030]">
-              {booking.image ? (
-                <Image
-                  src={booking.image}
-                  alt={booking.userName}
-                  fill
-                  sizes="36px"
-                  className="object-cover"
-                />
-              ) : (
-                <UserRound className="m-2 text-gray-500" size={20} />
-              )}
-            </div>
-
             <div className="min-w-0">
               <p className="text-xs text-gray-500 dark:text-neutral-400">
                 Booked By

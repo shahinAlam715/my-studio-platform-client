@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import type { FieldProps } from "@/type";
+import toast from "react-hot-toast";
 
 const PASSWORD_RULE = /^(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
 
@@ -65,7 +66,7 @@ export default function RegisterPage() {
     if (!formValid || loading) return;
 
     setLoading(true);
-    setErrorMessage("");
+    toast.success("Registration Successfull!")
 
     try {
       const userData = {
@@ -78,20 +79,16 @@ export default function RegisterPage() {
       const { error } = await authClient.signUp.email(userData);
 
       if (error) {
-        setErrorMessage(
-          error.message || "Registration failed. Please try again."
-        );
+        toast.error("Registration failed. Please try again.")
         return;
       }
 
-      router.push("/");
+      router.push("/login");
       router.refresh();
     } catch (error) {
-      console.error("Registration error:", error);
+       toast.error("Something went wrong. Please try again")
+        console.error("Login error:", error);
 
-      setErrorMessage(
-        "Something went wrong. Please try again."
-      );
     } finally {
       setLoading(false);
     }
@@ -102,8 +99,7 @@ export default function RegisterPage() {
     if (googleLoading) return;
 
     setGoogleLoading(true);
-    setErrorMessage("");
-
+    toast.success("Google registration Success!")
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
@@ -111,16 +107,13 @@ export default function RegisterPage() {
       });
 
       if (error) {
-        setErrorMessage(
-          error.message || "Google registration failed."
-        );
+          toast.error("Google registration failed.")
       }
     } catch (error) {
-      console.error("Google registration error:", error);
-
-      setErrorMessage(
-        "Unable to register with Google. Please try again."
-      );
+      toast.error("Unable to register with Google. Please try again.")
+            console.error("Login error:", error);
+      
+      
     } finally {
       setGoogleLoading(false);
     }

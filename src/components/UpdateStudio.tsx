@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select";
 
 import type { UpdateStudioProps } from "@/type";
+import toast from "react-hot-toast";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 const CATEGORY_OPTIONS = [
   { slug: "photo", label: "Photo Studios" },
@@ -80,10 +82,11 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    const token = await getTokenFromClient()
+
     const form = event.currentTarget;
 
     setSaving(true);
-    setError("");
 
     const formData = new FormData(form);
     const fields = Object.fromEntries(formData.entries());
@@ -104,20 +107,25 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            authorization: `Bearer ${token}`
           },
           body: JSON.stringify(studioData),
         }
       );
 
+      if (res.ok) {
+        toast.success("Update Successfull!")
+      }
+
       if (!res.ok) {
-        throw new Error("Failed to update studio");
+       toast.error("Failed to update studio");
       }
 
       setOpen(false);
       router.refresh();
     } catch (err) {
+      toast.error("Could not save changes. Please try again.")
       console.error("Update studio error:", err);
-      setError("Could not save changes. Please try again.");
     } finally {
       setSaving(false);
     }

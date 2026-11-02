@@ -13,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import toast from "react-hot-toast";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 const CATEGORY_OPTIONS = [
   { slug: "photo", label: "Photo Studios" },
@@ -56,6 +58,8 @@ export default function StudioForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const token = await getTokenFromClient()
+
     const form = e.currentTarget;
 
     setMessage("");
@@ -88,6 +92,7 @@ export default function StudioForm() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            authorization: `Bearer ${token}`
           },
           body: JSON.stringify(studioData),
         }
@@ -97,17 +102,17 @@ export default function StudioForm() {
         throw new Error(`Request failed: ${res.status}`);
       }
 
-      setMessage("Studio published successfully!");
+      toast.success("Studio published successfully!")
       setError(false);
 
       form.reset();
       setCategory("");
       setAmenities([]);
     } catch (err) {
+      toast.error("Failed to publish studio. Please try again.")
       console.error("Studio publish error:", err);
 
       setError(true);
-      setMessage("Failed to publish studio. Please try again.");
     } finally {
       setLoading(false);
     }
