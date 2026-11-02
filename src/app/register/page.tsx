@@ -1,27 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ComponentProps } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import type { FieldProps } from "@/type";
 
 const PASSWORD_RULE = /^(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
 
 const PASSWORD_ERROR =
   "Password needs an uppercase letter, a lowercase letter and at least 6 characters.";
 
-function Field({
-  id,
-  label,
-  className,
-  ...props
-}: ComponentProps<"input"> & {
-  id: string;
-  label: string;
-}) {
+function Field({ id, label, className, ...props }: FieldProps) {
   return (
     <div>
       <label
@@ -82,7 +75,7 @@ export default function RegisterPage() {
         ...(photoUrl.trim() && { image: photoUrl.trim() }),
       };
 
-      const { data, error } = await authClient.signUp.email(userData);
+      const { error } = await authClient.signUp.email(userData);
 
       if (error) {
         setErrorMessage(
@@ -90,8 +83,6 @@ export default function RegisterPage() {
         );
         return;
       }
-
-      console.log("Registration successful:", data);
 
       router.push("/");
       router.refresh();

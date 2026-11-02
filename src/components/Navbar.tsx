@@ -9,6 +9,8 @@ import { Menu, X, Sun, Moon, LogOut } from "lucide-react";
 
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import LogoIcon from "@/components/LogoIcon";
+import type { UserSession } from "@/type";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -17,36 +19,6 @@ const NAV_LINKS = [
   { href: "/about", label: "About Us" },
   { href: "/dashboard", label: "Dashboard" },
 ];
-
-type UserSession = {
-  user: {
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  };
-};
-
-function LogoIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <defs>
-        <linearGradient id="logo-gold" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#ffe08a" />
-          <stop offset="50%" stopColor="#f5c518" />
-          <stop offset="100%" stopColor="#c99a0a" />
-        </linearGradient>
-      </defs>
-      <path d="M7.2 3h9.6L22 9.2 12 21 2 9.2 7.2 3Z" fill="url(#logo-gold)" />
-      <path
-        d="M7.2 3 12 9.2 16.8 3M2 9.2h20M12 9.2V21"
-        fill="none"
-        stroke="#0b0b0b"
-        strokeOpacity=".4"
-        strokeWidth="1"
-      />
-    </svg>
-  );
-}
 
 export default function Navbar() {
   const pathname = usePathname();

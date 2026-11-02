@@ -8,13 +8,11 @@ export function ThemeProvider({
   children,
   ...props
 }: ThemeProviderProps) {
-  const scriptProps =
-    typeof window === "undefined"
-      ? undefined
-      : { type: "application/json" as const };
-
+  // `attribute="class"` is required: our CSS (`@custom-variant dark`,
+  // `.dark body`) toggles off the `dark` class, but next-themes defaults
+  // to `data-theme`.
   return (
-    <NextThemeProvider {...props} scriptProps={scriptProps}>
+    <NextThemeProvider attribute="class" {...props}>
       {children}
     </NextThemeProvider>
   );

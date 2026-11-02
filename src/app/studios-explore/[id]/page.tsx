@@ -15,36 +15,11 @@ import UpdateStudio from "@/components/UpdateStudio";
 import DeleteStudio from "@/components/DeleteStudio";
 import BookingButton from "@/components/BookingButton";
 import { authClient } from "@/lib/auth-client";
-
-interface Studio {
-  _id: string;
-  title: string;
-  category: string;
-  hourlyRate: string;
-  securityDeposit: string;
-  maxCapacity: string;
-  location: string;
-  imageUrl: string;
-  overview: string;
-  ownerName: string;
-  ownerEmail: string;
-  rating?: number;
-  amenities?: string[];
-  gallery?: string[];
-  reviews?: {
-    name: string;
-    rating: number;
-    comment: string;
-  }[];
-}
-
-interface DetailsPageProps {
-  params: Promise<{ id: string }>;
-}
+import type { DetailsPageProps, StudioDetail } from "@/type";
 
 export default async function DetailsPage({ params }: DetailsPageProps) {
 
-  const { data: session, error } = await authClient.getSession()
+  const { data: session } = await authClient.getSession()
   const user = session?.user
 
   const { id } = await params;
@@ -76,7 +51,7 @@ export default async function DetailsPage({ params }: DetailsPageProps) {
     );
   }
 
-  const data: Studio = await res.json();
+  const data: StudioDetail = await res.json();
   const rating = data.rating ?? 4.8;
 
   const galleryImages = data.gallery?.length

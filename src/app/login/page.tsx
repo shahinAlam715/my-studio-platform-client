@@ -33,7 +33,7 @@ export default function LoginPage() {
     setErrorMessage("");
 
     try {
-      const { data, error } = await authClient.signIn.email({
+      const { error } = await authClient.signIn.email({
         email,
         password,
       });
@@ -44,8 +44,6 @@ export default function LoginPage() {
         );
         return;
       }
-
-      console.log("Login successful:", data);
 
       router.push("/");
       router.refresh();

@@ -4,32 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-
-interface Studio {
-  _id: string;
-  title: string;
-  category: string;
-  hourlyRate: string;
-  securityDeposit: string;
-  maxCapacity: string;
-  location: string;
-  imageUrl: string;
-  overview: string;
-  ownerName: string;
-  ownerEmail: string;
-  rating?: number;
-  amenities?: string[];
-  gallery?: string[];
-  reviews?: {
-    name: string;
-    rating: number;
-    comment: string;
-  }[];
-}
-
-interface BookingButtonProps {
-  studio: Studio;
-}
+import type { BookingButtonProps } from "@/type";
 
 export default function BookingButton({ studio }: BookingButtonProps) {
   const [loading, setLoading] = useState(false);
@@ -44,15 +19,12 @@ export default function BookingButton({ studio }: BookingButtonProps) {
       const { data: session } = await authClient.getSession();
       const user = session?.user;
 
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+      
 
       const info = {
-        userName: user.name,
-        email: user.email,
-        image: user.image,
+        userName: user?.name,
+        email: user?.email,
+        image: user?.image,
         bookingdate: new Date().toISOString(),
         studioId: studio._id,
         title: studio.title,

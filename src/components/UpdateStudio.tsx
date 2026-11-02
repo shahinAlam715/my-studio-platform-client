@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import type { UpdateStudioProps } from "@/type";
+
 const CATEGORY_OPTIONS = [
   { slug: "photo", label: "Photo Studios" },
   { slug: "sound-stage", label: "Sound Stages" },
@@ -30,25 +32,6 @@ const AMENITIES = [
   "Soundproofing",
   "Lighting kit",
 ];
-
-type StudioUpdate = {
-  _id: string | { $oid: string };
-  title: string;
-  category: string;
-  hourlyRate: string;
-  securityDeposit: string;
-  maxCapacity: string;
-  location: string;
-  imageUrl: string;
-  overview: string;
-  ownerName: string;
-  ownerEmail: string;
-  amenities?: string[];
-};
-
-type UpdateStudioProps = {
-  studio: StudioUpdate;
-};
 
 export default function UpdateStudio({ studio }: UpdateStudioProps) {
   const router = useRouter();
@@ -81,11 +64,8 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
     ...new Set([...AMENITIES, ...amenities]),
   ];
 
-  // MongoDB _id may arrive as extended JSON
-  const studioId =
-    typeof studio._id === "string"
-      ? studio._id
-      : studio._id.$oid;
+  // `_id` is always a string by the time a studio reaches this form.
+  const studioId = studio._id;
 
   // Toggle amenities
   function toggleAmenity(amenity: string) {
@@ -198,7 +178,7 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
 
               <Select
                 value={category}
-                onValueChange={(value) => setCategory(value)}
+                onValueChange={(value) => setCategory(value ?? "")}
               >
                 <SelectTrigger
                   id="update-category"

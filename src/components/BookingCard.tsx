@@ -21,14 +21,8 @@ import {
   Users,
   UserRound,
 } from "lucide-react";
-import { IBooking } from "@/type";
+import type { BookingCardProps } from "@/type";
 import { useState } from "react";
-
-
-
-interface BookingCardProps {
-  booking: IBooking;
-}
 
 export default function BookingCard({ booking }: BookingCardProps) {
      const [loading, setLoading] = useState(false);

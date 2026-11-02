@@ -27,7 +27,7 @@ export default function CategorySection() {
           {CATEGORIES.map((category) => (
             <Link
               key={category.slug}
-              href={`/studios?category=${category.slug}`}
+              href={`/studios-explore?category=${category.slug}`}
               className="group rounded-xl border border-gray-200 bg-gray-50 p-6 transition-colors duration-300 hover:border-gold/40 hover:bg-gray-100 dark:border-white/5 dark:bg-[#161616] dark:hover:bg-[#1c1c1c]"
             >
               <h3 className="text-base font-bold text-gray-900 dark:text-white">

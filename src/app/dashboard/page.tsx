@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ComponentType } from "react";
+import { useState } from "react";
 import {
   PlusIcon,
   CalendarIcon,
@@ -10,12 +10,9 @@ import {
 import StudioForm from "@/components/StudioForm";
 import MyBookings from "@/components/MyBookings";
 import MyListings from "@/components/MyListings";
+import type { DashboardTab } from "@/type";
 
-const TABS: {
-  id: string;
-  label: string;
-  icon: ComponentType<{ className?: string }>;
-}[] = [
+const TABS: DashboardTab[] = [
   { id: "my-bookings", label: "My Bookings", icon: CalendarIcon },
   { id: "add-studio", label: "Add Studio", icon: PlusIcon },
   { id: "my-listings", label: "My Listings", icon: BuildingIcon },

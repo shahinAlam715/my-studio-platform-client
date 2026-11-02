@@ -5,25 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-type ApiStudio = {
-  _id: string | { $oid: string };
-  title: string;
-  category?: string;
-  hourlyRate: string | number;
-  location: string;
-  imageUrl?: string;
-  rating?: number;
-};
-
-type Studio = {
-  id: string;
-  name: string;
-  location: string;
-  category: string;
-  rating: number;
-  price: number;
-  image?: string;
-};
+import type { ApiStudio, Studio, StudioImageProps } from "@/type";
 
 const BADGE_LABELS: Record<string, string> = {
   photo: "Photo Studio",
@@ -69,13 +51,7 @@ function mapStudio(item: ApiStudio): Studio {
 }
 
 // Studio Image Component
-function StudioImage({
-  src,
-  alt,
-}: {
-  src?: string;
-  alt: string;
-}) {
+function StudioImage({ src, alt }: StudioImageProps) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
   return (

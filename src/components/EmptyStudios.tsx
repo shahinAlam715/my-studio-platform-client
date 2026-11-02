@@ -15,7 +15,7 @@ export default function EmptyStudios() {
       </p>
 
       <Link
-        href="/studios"
+        href="/studios-explore"
         className="mt-5 inline-flex h-10 items-center justify-center rounded-full bg-gold px-6 text-sm font-semibold text-black transition-colors hover:bg-gold-soft"
       >
         Explore Studios

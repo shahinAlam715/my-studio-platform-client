@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Button } from "@/components/ui/button";
+import type { DeleteStudioProps } from "@/type";
 
-export default function DeleteStudio({ id }: { id: string }) {
+export default function DeleteStudio({ id }: DeleteStudioProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 

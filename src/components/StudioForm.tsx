@@ -97,10 +97,6 @@ export default function StudioForm() {
         throw new Error(`Request failed: ${res.status}`);
       }
 
-      const data = await res.json();
-
-      console.log("Studio published:", data);
-
       setMessage("Studio published successfully!");
       setError(false);
 

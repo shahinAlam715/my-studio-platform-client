@@ -11,15 +11,9 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 
-type Slide = {
-  eyebrow: string;
-  headline: string;
-  body: string;
-  image: string;
-  imageAlt: string;
-};
+import type { HeroSlide } from "@/type";
 
-const SLIDES: Slide[] = [
+const SLIDES: HeroSlide[] = [
   {
     eyebrow: "Peer-to-Peer Creative Workspaces",
     headline: "Find the room where your next shoot comes alive.",
@@ -159,14 +153,14 @@ export default function Hero() {
                     {/* Buttons */}
                     <div className="mt-8 flex flex-wrap gap-3">
                       <Link
-                        href="/studios"
+                        href="/studios-explore"
                         className="inline-flex h-11 items-center justify-center rounded-full bg-gold px-7 text-sm font-semibold text-black transition-colors hover:bg-gold-soft"
                       >
                         Explore Studios
                       </Link>
 
                       <Link
-                        href="/host"
+                        href="/dashboard"
                         className="inline-flex h-11 items-center justify-center rounded-full border border-gray-800 px-7 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-900 hover:text-white dark:border-white/70 dark:text-white dark:hover:bg-white dark:hover:text-black"
                       >
                         Host Your Space
