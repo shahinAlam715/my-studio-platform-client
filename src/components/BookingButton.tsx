@@ -69,7 +69,7 @@ export default function BookingButton({ studio }: BookingButtonProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(bookingInfo),
       });

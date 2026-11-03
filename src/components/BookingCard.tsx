@@ -19,17 +19,20 @@ import {
   MapPin,
   Clock,
   Users,
-  UserRound,
 } from "lucide-react";
 import type { BookingCardProps } from "@/type";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 export default function BookingCard({ booking }: BookingCardProps) {
      const [loading, setLoading] = useState(false);
   const router = useRouter();
   
   const handleDelete = async () => {
+
+    const token = await getTokenFromClient()
+
       try {
           setLoading(true);
           
@@ -37,6 +40,9 @@ export default function BookingCard({ booking }: BookingCardProps) {
         `${process.env.NEXT_PUBLIC_API_URL}/bookings/${booking._id}`,
         {
             method: "DELETE",
+            headers: {
+              authorization: `Bearer ${token}`
+            }
         }
     );
     if (res.ok) {

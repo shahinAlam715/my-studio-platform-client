@@ -1,11 +1,12 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import toast from "react-hot-toast";
 import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
@@ -33,6 +35,9 @@ const AMENITIES = [
 ];
 
 export default function StudioForm() {
+  // Form reference
+  const formRef = useRef<HTMLFormElement>(null);
+
   const [category, setCategory] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -47,6 +52,7 @@ export default function StudioForm() {
 
   const labelClass = "text-sm text-gray-700 dark:text-neutral-300";
 
+  // Toggle amenities
   const toggleAmenity = (amenity: string) => {
     setAmenities((current) =>
       current.includes(amenity)
@@ -55,28 +61,45 @@ export default function StudioForm() {
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  // Handle form submit
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
-
-    const token = await getTokenFromClient()
-
-    const form = e.currentTarget;
 
     setMessage("");
     setError(false);
 
+    // Get actual HTML form using useRef
+    const form = formRef.current;
+
+    if (!form || !(form instanceof HTMLFormElement)) {
+      toast.error("Form not found. Please refresh the page.");
+      return;
+    }
+
+    // Validate category
     if (!category) {
       setError(true);
       setMessage("Please select a studio category.");
       return;
     }
 
+    // Create FormData from actual form element
+    const formData = new FormData(form);
+    const formValues = Object.fromEntries(formData.entries());
+
     try {
       setLoading(true);
 
-      const formData = new FormData(form);
-      const formValues = Object.fromEntries(formData.entries());
+      // Get authentication token
+      const token = await getTokenFromClient();
 
+      if (!token) {
+        throw new Error("Authentication token not found. Please login again.");
+      }
+
+      // Prepare studio data
       const studioData = {
         ...formValues,
         category,
@@ -86,33 +109,50 @@ export default function StudioForm() {
         maxCapacity: Number(formValues.maxCapacity) || 0,
       };
 
+      // Send API request
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/studiodata`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            authorization: `Bearer ${token}`
+            authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(studioData),
         }
       );
 
+      const data = await res.json().catch(() => null);
+
       if (!res.ok) {
-        throw new Error(`Request failed: ${res.status}`);
+        throw new Error(
+          data?.message || `Request failed: ${res.status}`
+        );
       }
 
-      toast.success("Studio published successfully!")
+      // Success message
+      toast.success("Studio published successfully!");
+
+      setMessage("");
       setError(false);
 
+      // Reset form
       form.reset();
       setCategory("");
       setAmenities([]);
+
     } catch (err) {
-      toast.error("Failed to publish studio. Please try again.")
       console.error("Studio publish error:", err);
 
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to publish studio. Please try again.";
+
+      toast.error(errorMessage);
+      setMessage(errorMessage);
       setError(true);
+
     } finally {
       setLoading(false);
     }
@@ -120,6 +160,7 @@ export default function StudioForm() {
 
   return (
     <form
+      ref={formRef}
       onSubmit={handleSubmit}
       className="mt-8 space-y-5 rounded-2xl border border-gray-200 bg-gray-50 p-6 transition-colors duration-300 sm:p-8 dark:border-white/5 dark:bg-[#141414]"
     >
@@ -246,7 +287,9 @@ export default function StudioForm() {
 
       {/* Amenities */}
       <fieldset>
-        <legend className={labelClass}>Amenities</legend>
+        <legend className={labelClass}>
+          Amenities
+        </legend>
 
         <div className="mt-2.5 flex flex-wrap gap-2.5">
           {AMENITIES.map((amenity) => {

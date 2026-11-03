@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+
 import {
   Select,
   SelectContent,
@@ -47,7 +48,7 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
     studio.amenities ?? []
   );
 
-  // Theme-aware classes
+  // Input styles
   const inputClass =
     "mt-2 h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus-visible:border-gold focus-visible:ring-gold/40 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-neutral-500";
 
@@ -61,12 +62,11 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
 
   const mutedTextClass = "text-gray-500 dark:text-neutral-400";
 
-  // Include custom amenities already saved in the database
+  // Include custom amenities already saved in database
   const amenityOptions = [
     ...new Set([...AMENITIES, ...amenities]),
   ];
 
-  // `_id` is always a string by the time a studio reaches this form.
   const studioId = studio._id;
 
   // Toggle amenities
@@ -82,50 +82,79 @@ export default function UpdateStudio({ studio }: UpdateStudioProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const token = await getTokenFromClient()
-
+    // IMPORTANT: Get form and FormData BEFORE await
     const form = event.currentTarget;
-
-    setSaving(true);
-
     const formData = new FormData(form);
     const fields = Object.fromEntries(formData.entries());
 
-    const studioData = {
-      ...fields,
-      category,
-      amenities,
-      hourlyRate: Number(fields.hourlyRate),
-      securityDeposit: Number(fields.securityDeposit || 0),
-      maxCapacity: Number(fields.maxCapacity || 0),
-    };
+    setError("");
+
+    if (!category) {
+      setError("Please select a studio category.");
+      return;
+    }
 
     try {
+      setSaving(true);
+
+      // Get authentication token
+      const token = await getTokenFromClient();
+
+      if (!token) {
+        toast.error("Authentication token not found. Please login again.");
+        return;
+      }
+
+      // Prepare updated studio data
+      const studioData = {
+        ...fields,
+        category,
+        amenities,
+        hourlyRate: Number(fields.hourlyRate),
+        securityDeposit: Number(fields.securityDeposit || 0),
+        maxCapacity: Number(fields.maxCapacity || 0),
+      };
+
+      // Send PATCH request
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/studiodata/${studioId}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            authorization: `Bearer ${token}`
+            authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(studioData),
         }
       );
 
-      if (res.ok) {
-        toast.success("Update Successfull!")
-      }
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-       toast.error("Failed to update studio");
+        throw new Error(
+          data?.message || `Failed to update studio: ${res.status}`
+        );
       }
 
+      // Success
+      toast.success("Studio updated successfully!");
+
+      setError("");
       setOpen(false);
+
       router.refresh();
+
     } catch (err) {
-      toast.error("Could not save changes. Please try again.")
       console.error("Update studio error:", err);
+
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Could not save changes. Please try again.";
+
+      setError(errorMessage);
+      toast.error(errorMessage);
+
     } finally {
       setSaving(false);
     }

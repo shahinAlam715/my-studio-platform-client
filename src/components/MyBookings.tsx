@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,6 +5,7 @@ import BookingCard from "@/components/BookingCard";
 import { Loader2 } from "lucide-react";
 import { IBooking } from "@/type";
 import { authClient } from "@/lib/auth-client";
+import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
 export default function MyBookings() {
   const [data, setData] = useState<IBooking[]>([]);
@@ -16,6 +16,8 @@ export default function MyBookings() {
     let ignore = false;
 
     async function loadBookings() {
+      const token = await getTokenFromClient();
+
       try {
         // Get logged-in user session
         const { data: session } = await authClient.getSession();
@@ -29,7 +31,12 @@ export default function MyBookings() {
         // Fetch bookings using dynamic email
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/bookings/${encodeURIComponent(email)}`,
-          { cache: "no-store" }
+          {
+            headers: {
+              authorization: `Bearer, ${token}`,
+            },
+            cache: "no-store",
+          },
         );
 
         if (!res.ok) {
