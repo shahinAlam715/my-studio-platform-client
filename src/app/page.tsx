@@ -5,14 +5,11 @@ import Questions from "@/components/Questions";
 import About from "@/components/About";
 import Homefeauter from "@/components/Homefeauter";
 
-
-
-
 export default function Home() {
   return (
     <>
       <Hero />
-      <Homefeauter/>
+      <Homefeauter />
       <CategorySection />
       <HowItWorks />
       <Questions />

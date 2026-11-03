@@ -36,7 +36,7 @@ export default function DeleteStudio({ id, onDeleted }: DeleteStudioProps) {
         {
           method: "DELETE",
           headers: token ? { authorization: `Bearer ${token}` } : undefined,
-        }
+        },
       );
 
       if (!res.ok) {
@@ -66,18 +66,12 @@ export default function DeleteStudio({ id, onDeleted }: DeleteStudioProps) {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger
-        render={
-          <Button variant="destructive">
-            Delete
-          </Button>
-        }
+        render={<Button variant="destructive">Delete</Button>}
       />
 
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>
-            Are you absolutely sure?
-          </AlertDialogTitle>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
 
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete this
@@ -86,14 +80,9 @@ export default function DeleteStudio({ id, onDeleted }: DeleteStudioProps) {
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
 
-          <AlertDialogAction
-            onClick={handleDelete}
-            disabled={loading}
-          >
+          <AlertDialogAction onClick={handleDelete} disabled={loading}>
             {loading ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>

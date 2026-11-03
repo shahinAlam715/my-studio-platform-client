@@ -1,4 +1,3 @@
-
 "use client";
 
 const STEPS = [
@@ -42,9 +41,7 @@ export default function HowItWorks() {
               key={step.number}
               className="rounded-xl border border-gray-200 bg-gray-50 p-6 transition-colors duration-300 dark:border-white/5 dark:bg-[#161616]"
             >
-              <p className="text-lg font-bold text-gold">
-                {step.number}
-              </p>
+              <p className="text-lg font-bold text-gold">{step.number}</p>
 
               <h3 className="mt-3 text-base font-bold text-gray-900 dark:text-white">
                 {step.title}

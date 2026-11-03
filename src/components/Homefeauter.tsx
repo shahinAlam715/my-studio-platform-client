@@ -11,71 +11,63 @@ const Homefeauter = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    let isMounted = true;
 
-  
-useEffect(() => {
-  let isMounted = true;
+    async function loadStudios() {
+      try {
+        setLoading(true);
+        setError(null);
 
-  async function loadStudios() {
-    try {
-      setLoading(true);
-      setError(null);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/studiodata`,
+          {
+            cache: "no-store",
+          },
+        );
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/studiodata`,
-        {
-          cache: "no-store",
+        if (!res.ok) {
+          throw new Error(`Request failed: ${res.status}`);
         }
-      );
 
-      if (!res.ok) {
-        throw new Error(`Request failed: ${res.status}`);
-      }
+        const data: ApiStudio[] = await res.json();
 
-      const data: ApiStudio[] = await res.json();
+        const formattedStudios: Studio[] = data.map((item) => ({
+          id: typeof item._id === "string" ? item._id : item._id.$oid,
+          name: item.title,
+          location: item.location,
+          category: item.category ?? "other",
+          rating: Number(item.rating) || 0,
+          price: Number(item.hourlyRate) || 0,
+          instantBook: item.instantBook ?? false,
+          image: item.imageUrl || "/images/studio-placeholder.png",
+        }));
 
-      const formattedStudios: Studio[] = data.map((item) => ({
-        id:
-          typeof item._id === "string"
-            ? item._id
-            : item._id.$oid,
-        name: item.title,
-        location: item.location,
-        category: item.category ?? "other",
-        rating: Number(item.rating) || 0,
-        price: Number(item.hourlyRate) || 0,
-        instantBook: item.instantBook ?? false,
-        image: item.imageUrl || "/images/studio-placeholder.png",
-      }));
+        // Highest price first
+        formattedStudios.sort((a, b) => b.price - a.price);
 
-      // Highest price first
-      formattedStudios.sort((a, b) => b.price - a.price);
+        if (isMounted) {
+          setStudios(formattedStudios.slice(0, 6));
+        }
+      } catch (err) {
+        console.error("Failed to load studios:", err);
 
-      if (isMounted) {
-        setStudios(formattedStudios.slice(0, 6));
-      }
-
-    } catch (err) {
-      console.error("Failed to load studios:", err);
-
-      if (isMounted) {
-        setError("Could not load studios. Please try again later.");
-      }
-
-    } finally {
-      if (isMounted) {
-        setLoading(false);
+        if (isMounted) {
+          setError("Could not load studios. Please try again later.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
-  }
 
-  loadStudios();
+    loadStudios();
 
-  return () => {
-    isMounted = false;
-  };
-}, []);
-
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <section className="bg-white py-12 text-gray-900 transition-colors duration-300 sm:py-16 dark:bg-[#0b0b0b] dark:text-white">
@@ -124,7 +116,7 @@ useEffect(() => {
                   className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/50 hover:shadow-lg dark:border-white/5 dark:bg-[#161616]"
                 >
                   {/* Studio Image */}
-                  <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-[#202020]">
+                  <div className="relative aspect-4/3 overflow-hidden bg-gray-100 dark:bg-[#202020]">
                     <Image
                       src={studio.image || "/images/studio-placeholder.png"}
                       alt={studio.name}
@@ -133,7 +125,7 @@ useEffect(() => {
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
 
                     {/* Category Badge */}
                     <span className="absolute top-3 left-3 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold capitalize text-black">

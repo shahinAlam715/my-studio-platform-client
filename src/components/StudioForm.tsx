@@ -19,7 +19,6 @@ import { getTokenFromClient } from "@/lib/getTokenFromClient";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
-
 const CATEGORY_OPTIONS = [
   { slug: "photo", label: "Photo Studios" },
   { slug: "sound-stage", label: "Sound Stages" },
@@ -37,8 +36,7 @@ const AMENITIES = [
 ];
 
 export default function StudioForm() {
-
-const router = useRouter()
+  const router = useRouter();
 
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -134,11 +132,11 @@ const router = useRouter()
       }
 
       toast.success("Studio published successfully!");
-      router.refresh()
+      router.refresh();
       form.reset();
       setCategory("");
       setAmenities([]);
-      router.push("/studios-explore")
+      router.push("/my-listing");
     } catch (err) {
       console.error("Studio publish error:", err);
 

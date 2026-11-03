@@ -1,11 +1,10 @@
-
 "use client";
 
 import { Mic2, AudioLines } from "lucide-react";
 
 const StudioLoader = () => {
   return (
-    <div className="flex min-h-[300px] w-full flex-col items-center justify-center bg-white transition-colors duration-300 dark:bg-[#0b0b0b]">
+    <div className="flex min-h-75 w-full flex-col items-center justify-center bg-white transition-colors duration-300 dark:bg-[#0b0b0b]">
       {/* Spinner */}
       <div className="relative flex h-20 w-20 items-center justify-center">
         {/* Outer Ring */}

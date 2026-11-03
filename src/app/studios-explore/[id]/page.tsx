@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -11,19 +10,17 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-
 import BookingButton from "@/components/BookingButton";
 import { authClient } from "@/lib/auth-client";
 import type { DetailsPageProps, StudioDetail } from "@/type";
 import { getTokenFromserver } from "@/lib/getTokenFromserver";
 
 export default async function DetailsPage({ params }: DetailsPageProps) {
-
   // secure api
-  const token = await getTokenFromserver()
+  const token = await getTokenFromserver();
 
-  const { data: session } = await authClient.getSession()
-  const user = session?.user
+  const { data: session } = await authClient.getSession();
+  const user = session?.user;
 
   const { id } = await params;
 
@@ -31,7 +28,7 @@ export default async function DetailsPage({ params }: DetailsPageProps) {
     `${process.env.NEXT_PUBLIC_API_URL}/studiodata/${id}`,
     {
       headers: {
-        authorization: `Bearer ${token}`
+        authorization: `Bearer ${token}`,
       },
     },
   );
@@ -114,7 +111,8 @@ export default async function DetailsPage({ params }: DetailsPageProps) {
             <h2 className="text-xl font-bold text-amber-500 sm:text-2xl">
               ${Number(data.hourlyRate).toFixed(0)}
               <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
-                {" "} / hr
+                {" "}
+                / hr
               </span>
             </h2>
 
@@ -130,9 +128,7 @@ export default async function DetailsPage({ params }: DetailsPageProps) {
               </div>
 
               <div className="min-w-0">
-                <p className="text-xs font-semibold">
-                  Hosted by {user?.name}
-                </p>
+                <p className="text-xs font-semibold">Hosted by {user?.name}</p>
                 <p className="truncate text-[10px] text-gray-500 dark:text-gray-400">
                   {user?.email}
                 </p>
@@ -149,7 +145,6 @@ export default async function DetailsPage({ params }: DetailsPageProps) {
         </div>
 
         {/* Update / Delete Actions */}
-       
 
         {/* Studio Details */}
         <div className="mt-6 max-w-3xl">
@@ -157,9 +152,7 @@ export default async function DetailsPage({ params }: DetailsPageProps) {
             {data.category?.replace("-", " ") || "Unknown"}
           </span>
 
-          <h1 className="mt-3 text-2xl font-bold sm:text-3xl">
-            {data.title}
-          </h1>
+          <h1 className="mt-3 text-2xl font-bold sm:text-3xl">{data.title}</h1>
 
           <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400 sm:text-sm">
             <span className="flex items-center gap-1">
@@ -210,9 +203,7 @@ export default async function DetailsPage({ params }: DetailsPageProps) {
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Hourly Rate
                 </p>
-                <p className="mt-1 text-sm font-bold">
-                  ${data.hourlyRate}/hr
-                </p>
+                <p className="mt-1 text-sm font-bold">${data.hourlyRate}/hr</p>
               </div>
 
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-[#292929] dark:bg-[#1b1b1d]">

@@ -22,7 +22,6 @@
 //   matcher: ['/studios-explore/:path', "/dashboard", "/my-bookings", "/add-studio", "/my-listing"],
 // }
 
-
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "./lib/auth";
@@ -40,7 +39,7 @@ export async function proxy(request: NextRequest) {
     // User যে পেজে যেতে চেয়েছিল সেটি সংরক্ষণ
     loginUrl.searchParams.set(
       "callbackUrl",
-      request.nextUrl.pathname + request.nextUrl.search
+      request.nextUrl.pathname + request.nextUrl.search,
     );
 
     return NextResponse.redirect(loginUrl);

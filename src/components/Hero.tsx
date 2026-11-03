@@ -102,8 +102,7 @@ export default function Hero() {
 
             return (
               <CarouselItem key={slide.eyebrow}>
-                <div className="relative min-h-[560px] sm:min-h-[600px] lg:min-h-[680px]">
-
+                <div className="relative min-h-140 sm:min-h-150 lg:min-h-170">
                   {/* Banner Image */}
                   <Image
                     src={slide.image}
@@ -117,13 +116,13 @@ export default function Hero() {
                   {/* Main Overlay */}
                   <div
                     aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-white/40 transition-colors duration-300 dark:from-black dark:via-black/85 dark:to-black/40"
+                    className="absolute inset-0 bg-linear-to-r from-white via-white/85 to-white/40 transition-colors duration-300 dark:from-black dark:via-black/85 dark:to-black/40"
                   />
 
                   {/* Bottom and Top Overlay */}
                   <div
                     aria-hidden="true"
-                    className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-white/60 transition-colors duration-300 dark:from-black dark:to-black/60"
+                    className="absolute inset-0 bg-linear-to-t from-white via-transparent to-white/60 transition-colors duration-300 dark:from-black dark:to-black/60"
                   />
 
                   {/* Gold Glow */}
@@ -136,8 +135,7 @@ export default function Hero() {
                   />
 
                   {/* Content */}
-                  <div className="relative mx-auto flex min-h-[560px] max-w-7xl flex-col justify-center px-6 pt-20 pb-28 sm:min-h-[600px] sm:px-6 lg:min-h-[680px] lg:px-8">
-
+                  <div className="relative mx-auto flex min-h-140 max-w-7xl flex-col justify-center px-6 pt-20 pb-28 sm:min-h-150 sm:px-6 lg:min-h-170 lg:px-8">
                     <p className="text-xs font-bold tracking-[0.18em] text-gold uppercase sm:text-sm">
                       {slide.eyebrow}
                     </p>
@@ -196,5 +194,3 @@ export default function Hero() {
     </section>
   );
 }
-
-

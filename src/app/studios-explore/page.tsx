@@ -304,7 +304,7 @@ export default function ExploreStudios() {
                 className={`overflow-hidden rounded-xl border transition-colors hover:border-amber-400/50 ${cardClass}`}
               >
                 {/* Studio Image */}
-                <div className="relative h-40 bg-gradient-to-br from-amber-900/30 via-gray-200 to-gray-100 dark:via-[#1c1c1c] dark:to-[#161616]">
+                <div className="relative h-40 bg-linear-to-br` from-amber-900/30 via-gray-200 to-gray-100 dark:via-[#1c1c1c] dark:to-[#161616]">
                   <StudioImage
                     src={studio.image}
                     alt={studio.name}
@@ -312,7 +312,7 @@ export default function ExploreStudios() {
 
                   <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"
+                    className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/50 to-transparent"
                   />
 
                   {/* Category Badge */}

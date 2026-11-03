@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -64,9 +63,7 @@ const categoryLabels: Record<string, string> = {
 
 // Get studio ID as string
 const getStudioId = (studio: IStudio): string => {
-  return typeof studio._id === "string"
-    ? studio._id
-    : studio._id.$oid;
+  return typeof studio._id === "string" ? studio._id : studio._id.$oid;
 };
 
 // Convert API data into StudioDetail format
@@ -132,71 +129,6 @@ export default function MyListings() {
       const token = await getTokenFromClient();
 
       if (!token) {
-        throw new Error(
-          "Authentication token not found. Please login again."
-        );
-      }
-
-      if (!API_URL) {
-        throw new Error("API URL is not configured.");
-      }
-
-      const res = await fetch(`${API_URL}/studiodata`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        cache: "no-store",
-      });
-
-      const result = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        throw new Error(
-          result?.message || "Failed to fetch studio listings."
-        );
-      }
-
-      const studios = getStudiosFromResponse(result);
-
-      // Filter only logged-in user's studios
-      const myStudios = studios.filter(
-        (studio) =>
-          studio.ownerEmail?.trim().toLowerCase() ===
-          email.trim().toLowerCase()
-      );
-
-      setData(myStudios);
-    } catch (err) {
-      console.error("My listings error:", err);
-
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load your listings."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Initial loading
- // Initial loading
-useEffect(() => {
-  let ignore = false;
-
-  async function initialLoad() {
-    try {
-      const { data: session } = await authClient.getSession();
-      const email = session?.user?.email;
-
-      if (!email) {
-        throw new Error("Please login first.");
-      }
-
-      const token = await getTokenFromClient();
-
-      if (!token) {
         throw new Error("Authentication token not found. Please login again.");
       }
 
@@ -215,46 +147,107 @@ useEffect(() => {
       const result = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(
-          result?.message || "Failed to fetch studio listings."
-        );
+        throw new Error(result?.message || "Failed to fetch studio listings.");
       }
 
       const studios = getStudiosFromResponse(result);
 
+      // Filter only logged-in user's studios
       const myStudios = studios.filter(
         (studio) =>
           studio.ownerEmail?.trim().toLowerCase() ===
-          email.trim().toLowerCase()
+          email.trim().toLowerCase(),
       );
 
-      if (!ignore) {
-        setData(myStudios);
-        setError("");
-      }
+      setData(myStudios);
     } catch (err) {
       console.error("My listings error:", err);
 
-      if (!ignore) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Unable to load your listings."
-        );
-      }
+      setError(
+        err instanceof Error ? err.message : "Unable to load your listings.",
+      );
     } finally {
-      if (!ignore) {
-        setLoading(false);
+      setLoading(false);
+    }
+  }, []);
+
+  // Initial loading
+  // Initial loading
+  useEffect(() => {
+    let ignore = false;
+
+    async function initialLoad() {
+      try {
+        const { data: session } = await authClient.getSession();
+        const email = session?.user?.email;
+
+        if (!email) {
+          throw new Error("Please login first.");
+        }
+
+        const token = await getTokenFromClient();
+
+        if (!token) {
+          throw new Error(
+            "Authentication token not found. Please login again.",
+          );
+        }
+
+        if (!API_URL) {
+          throw new Error("API URL is not configured.");
+        }
+
+        const res = await fetch(`${API_URL}/studiodata`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          cache: "no-store",
+        });
+
+        const result = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          throw new Error(
+            result?.message || "Failed to fetch studio listings.",
+          );
+        }
+
+        const studios = getStudiosFromResponse(result);
+
+        const myStudios = studios.filter(
+          (studio) =>
+            studio.ownerEmail?.trim().toLowerCase() ===
+            email.trim().toLowerCase(),
+        );
+
+        if (!ignore) {
+          setData(myStudios);
+          setError("");
+        }
+      } catch (err) {
+        console.error("My listings error:", err);
+
+        if (!ignore) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Unable to load your listings.",
+          );
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
       }
     }
-  }
 
-  void initialLoad();
+    void initialLoad();
 
-  return () => {
-    ignore = true;
-  };
-}, []);
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   // Refresh listings
   const handleRefresh = async () => {
@@ -287,13 +280,11 @@ useEffect(() => {
       const result = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(
-          result?.message || "Failed to delete studio."
-        );
+        throw new Error(result?.message || "Failed to delete studio.");
       }
 
       setData((current) =>
-        current.filter((studio) => getStudioId(studio) !== id)
+        current.filter((studio) => getStudioId(studio) !== id),
       );
 
       toast.success("Studio deleted successfully!");
@@ -301,9 +292,7 @@ useEffect(() => {
       console.error("Delete studio error:", err);
 
       toast.error(
-        err instanceof Error
-          ? err.message
-          : "Unable to delete studio."
+        err instanceof Error ? err.message : "Unable to delete studio.",
       );
     } finally {
       setDeletingId(null);
@@ -321,7 +310,6 @@ useEffect(() => {
 
   return (
     <section className="relative space-y-7 px-4">
-
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
@@ -393,7 +381,6 @@ useEffect(() => {
           </Link>
         </div>
       ) : (
-
         /* Studio Cards */
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           {data.map((studio) => {
@@ -404,7 +391,6 @@ useEffect(() => {
                 key={id}
                 className="overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:border-amber-500/40 hover:shadow-lg dark:border-white/10 dark:bg-[#141414]"
               >
-
                 {/* Image */}
                 <div className="relative h-52 bg-neutral-200 dark:bg-neutral-800">
                   {studio.imageUrl ? (
@@ -491,7 +477,6 @@ useEffect(() => {
 
                   {/* Actions */}
                   <div className="flex gap-3 border-t border-gray-200 pt-4 dark:border-white/10">
-
                     <div className="flex-1">
                       <UpdateStudio
                         studio={normalizeStudio(studio)}
@@ -510,9 +495,7 @@ useEffect(() => {
 
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Delete Studio?
-                          </AlertDialogTitle>
+                          <AlertDialogTitle>Delete Studio?</AlertDialogTitle>
 
                           <AlertDialogDescription>
                             Are you sure you want to delete{" "}
@@ -522,18 +505,14 @@ useEffect(() => {
                         </AlertDialogHeader>
 
                         <AlertDialogFooter>
-                          <AlertDialogCancel>
-                            Cancel
-                          </AlertDialogCancel>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
 
                           <AlertDialogAction
                             disabled={deletingId === id}
                             onClick={() => handleDelete(id)}
                             className="bg-red-600 text-white hover:bg-red-700"
                           >
-                            {deletingId === id
-                              ? "Deleting..."
-                              : "Yes, Delete"}
+                            {deletingId === id ? "Deleting..." : "Yes, Delete"}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

@@ -21,7 +21,6 @@ export default function MyBookings() {
     let ignore = false;
 
     async function loadBookings() {
-      
       try {
         const token = await getTokenFromClient();
         // Get logged-in user session

@@ -1,12 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  PlusIcon,
-  CalendarIcon,
-  BuildingIcon,
-} from "lucide-react";
-
+import { PlusIcon, CalendarIcon, BuildingIcon } from "lucide-react";
 import StudioForm from "@/components/StudioForm";
 import MyBookings from "@/components/MyBookings";
 import MyListings from "@/components/MyListings";
@@ -24,7 +19,6 @@ export default function DashboardPage() {
   return (
     <section className="min-h-screen bg-gray-50 dark:bg-[#0b0b0b]">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
-
         {/* Dashboard heading */}
         <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
           Dashboard
@@ -36,7 +30,6 @@ export default function DashboardPage() {
 
         {/* Sidebar | Dynamic panel */}
         <div className="mt-8 grid gap-6 lg:grid-cols-[240px_1fr]">
-
           {/* Sidebar navigation */}
           <nav
             aria-label="Dashboard"
@@ -67,7 +60,6 @@ export default function DashboardPage() {
 
           {/* Dynamic content */}
           <div className="min-w-0">
-
             {/* My Bookings */}
             {active === "my-bookings" && <MyBookings />}
 
@@ -86,10 +78,8 @@ export default function DashboardPage() {
               </div>
             )}
 
-
             {/* My Listings */}
             {active === "my-listings" && <MyListings />}
-
           </div>
         </div>
       </div>

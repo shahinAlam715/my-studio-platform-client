@@ -65,11 +65,7 @@ export type Studio = {
 };
 
 /** Reservation lifecycle shown on the My Bookings page. */
-export type BookingStatus =
-  | "Pending"
-  | "Confirmed"
-  | "Completed"
-  | "Cancelled";
+export type BookingStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";
 
 /** Booking returned by `GET /bookings`. */
 export interface IBooking {

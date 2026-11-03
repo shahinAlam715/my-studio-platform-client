@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -36,19 +35,14 @@ const AMENITIES = [
   "Lighting kit",
 ];
 
-export default function UpdateStudio({
-  studio,
-  onUpdated,
-}: UpdateStudioProps) {
+export default function UpdateStudio({ studio, onUpdated }: UpdateStudioProps) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const [category, setCategory] = useState(studio.category);
 
-  const [amenities, setAmenities] = useState<string[]>(
-    studio.amenities ?? []
-  );
+  const [amenities, setAmenities] = useState<string[]>(studio.amenities ?? []);
 
   // Input styles
   const inputClass =
@@ -57,19 +51,15 @@ export default function UpdateStudio({
   const textareaClass =
     "mt-2 min-h-[160px] w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus-visible:border-gold focus-visible:ring-gold/40 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-neutral-500";
 
-  const labelClass =
-    "text-sm text-gray-700 dark:text-neutral-300";
+  const labelClass = "text-sm text-gray-700 dark:text-neutral-300";
 
   const formClass =
     "border-gray-200 bg-white text-gray-900 shadow-sm dark:border-white/5 dark:bg-[#141414] dark:text-white";
 
-  const mutedTextClass =
-    "text-gray-500 dark:text-neutral-400";
+  const mutedTextClass = "text-gray-500 dark:text-neutral-400";
 
   // Include custom amenities already saved in database
-  const amenityOptions = [
-    ...new Set([...AMENITIES, ...amenities]),
-  ];
+  const amenityOptions = [...new Set([...AMENITIES, ...amenities])];
 
   // Studio ID is now always a string
   const studioId = studio._id;
@@ -79,14 +69,12 @@ export default function UpdateStudio({
     setAmenities((current) =>
       current.includes(amenity)
         ? current.filter((item) => item !== amenity)
-        : [...current, amenity]
+        : [...current, amenity],
     );
   }
 
   // Update studio
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (saving) return;
@@ -110,9 +98,7 @@ export default function UpdateStudio({
       const token = await getTokenFromClient();
 
       if (!token) {
-        throw new Error(
-          "Authentication token not found. Please login again."
-        );
+        throw new Error("Authentication token not found. Please login again.");
       }
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -132,24 +118,20 @@ export default function UpdateStudio({
       };
 
       // Send PATCH request
-      const res = await fetch(
-        `${API_URL}/studiodata/${studioId}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(studioData),
-        }
-      );
+      const res = await fetch(`${API_URL}/studiodata/${studioId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(studioData),
+      });
 
       const data = await res.json().catch(() => null);
 
       if (!res.ok) {
         throw new Error(
-          data?.message ||
-            `Failed to update studio: ${res.status}`
+          data?.message || `Failed to update studio: ${res.status}`,
         );
       }
 
@@ -161,7 +143,6 @@ export default function UpdateStudio({
 
       // Refresh parent listing
       onUpdated?.();
-
     } catch (err) {
       console.error("Update studio error:", err);
 
@@ -172,7 +153,6 @@ export default function UpdateStudio({
 
       setError(errorMessage);
       toast.error(errorMessage);
-
     } finally {
       setSaving(false);
     }
@@ -201,9 +181,7 @@ export default function UpdateStudio({
           >
             {/* Header */}
             <header>
-              <h2 className="text-xl font-bold sm:text-2xl">
-                Update studio
-              </h2>
+              <h2 className="text-xl font-bold sm:text-2xl">Update studio</h2>
 
               <p className={`mt-1 text-sm ${mutedTextClass}`}>
                 Edit your listing details.
@@ -213,10 +191,7 @@ export default function UpdateStudio({
             {/* Title | Category */}
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label
-                  htmlFor="update-title"
-                  className={labelClass}
-                >
+                <label htmlFor="update-title" className={labelClass}>
                   Title
                 </label>
 
@@ -231,32 +206,21 @@ export default function UpdateStudio({
               </div>
 
               <div>
-                <label
-                  htmlFor="update-category"
-                  className={labelClass}
-                >
+                <label htmlFor="update-category" className={labelClass}>
                   Category
                 </label>
 
                 <Select
                   value={category}
-                  onValueChange={(value) =>
-                    setCategory(value ?? "")
-                  }
+                  onValueChange={(value) => setCategory(value ?? "")}
                 >
-                  <SelectTrigger
-                    id="update-category"
-                    className={inputClass}
-                  >
+                  <SelectTrigger id="update-category" className={inputClass}>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
 
                   <SelectContent>
                     {CATEGORY_OPTIONS.map((option) => (
-                      <SelectItem
-                        key={option.slug}
-                        value={option.slug}
-                      >
+                      <SelectItem key={option.slug} value={option.slug}>
                         {option.label}
                       </SelectItem>
                     ))}
@@ -268,10 +232,7 @@ export default function UpdateStudio({
             {/* Rates */}
             <div className="grid gap-5 sm:grid-cols-3">
               <div>
-                <label
-                  htmlFor="update-hourly-rate"
-                  className={labelClass}
-                >
+                <label htmlFor="update-hourly-rate" className={labelClass}>
                   Hourly rate ($)
                 </label>
 
@@ -287,10 +248,7 @@ export default function UpdateStudio({
               </div>
 
               <div>
-                <label
-                  htmlFor="update-security-deposit"
-                  className={labelClass}
-                >
+                <label htmlFor="update-security-deposit" className={labelClass}>
                   Security deposit ($)
                 </label>
 
@@ -305,10 +263,7 @@ export default function UpdateStudio({
               </div>
 
               <div>
-                <label
-                  htmlFor="update-max-capacity"
-                  className={labelClass}
-                >
+                <label htmlFor="update-max-capacity" className={labelClass}>
                   Max capacity
                 </label>
 
@@ -325,10 +280,7 @@ export default function UpdateStudio({
 
             {/* Location */}
             <div>
-              <label
-                htmlFor="update-location"
-                className={labelClass}
-              >
+              <label htmlFor="update-location" className={labelClass}>
                 Location / address
               </label>
 
@@ -344,10 +296,7 @@ export default function UpdateStudio({
 
             {/* Image URL */}
             <div>
-              <label
-                htmlFor="update-image-url"
-                className={labelClass}
-              >
+              <label htmlFor="update-image-url" className={labelClass}>
                 Image URL
               </label>
 
@@ -362,23 +311,18 @@ export default function UpdateStudio({
 
             {/* Amenities */}
             <fieldset>
-              <legend className={labelClass}>
-                Amenities
-              </legend>
+              <legend className={labelClass}>Amenities</legend>
 
               <div className="mt-2.5 flex flex-wrap gap-2.5">
                 {amenityOptions.map((amenity) => {
-                  const selected =
-                    amenities.includes(amenity);
+                  const selected = amenities.includes(amenity);
 
                   return (
                     <button
                       key={amenity}
                       type="button"
                       aria-pressed={selected}
-                      onClick={() =>
-                        toggleAmenity(amenity)
-                      }
+                      onClick={() => toggleAmenity(amenity)}
                       className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
                         selected
                           ? "border-gold bg-gold/15 text-gold"
@@ -394,10 +338,7 @@ export default function UpdateStudio({
 
             {/* Overview */}
             <div>
-              <label
-                htmlFor="update-overview"
-                className={labelClass}
-              >
+              <label htmlFor="update-overview" className={labelClass}>
                 Detailed overview
               </label>
 
@@ -412,10 +353,7 @@ export default function UpdateStudio({
             {/* Owner Information */}
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label
-                  htmlFor="update-owner-name"
-                  className={labelClass}
-                >
+                <label htmlFor="update-owner-name" className={labelClass}>
                   Owner name
                 </label>
 
@@ -429,10 +367,7 @@ export default function UpdateStudio({
               </div>
 
               <div>
-                <label
-                  htmlFor="update-owner-email"
-                  className={labelClass}
-                >
+                <label htmlFor="update-owner-email" className={labelClass}>
                   Owner email
                 </label>
 
@@ -448,10 +383,7 @@ export default function UpdateStudio({
 
             {/* Error Message */}
             {error && (
-              <p
-                className="text-sm text-red-500"
-                role="alert"
-              >
+              <p className="text-sm text-red-500" role="alert">
                 {error}
               </p>
             )}

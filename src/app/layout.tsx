@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,18 +23,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-   <html lang="en" suppressHydrationWarning>
-  <body className={`${geistSans.variable} ${geistMono.variable}`}>
-    <ThemeProvider>
-      <Navbar/>
-      {children}
-      <Footer/>
-    </ThemeProvider>
-     <Toaster />
-  </body>
-</html>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <ThemeProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </ThemeProvider>
+        <Toaster />
+      </body>
+    </html>
   );
 }
-
-
-

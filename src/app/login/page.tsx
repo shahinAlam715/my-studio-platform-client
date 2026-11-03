@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
@@ -69,20 +68,20 @@ export default function LoginPage() {
     if (googleLoading) return;
 
     setGoogleLoading(true);
-
+    toast.success("Google registration Success!");
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: redirectUrl,
+        callbackURL: "/",
       });
 
       if (error) {
-        toast.error("Google login failed.");
-        setGoogleLoading(false);
+        toast.error("Google registration failed.");
       }
     } catch (error) {
-      toast.error("Unable to login with Google. Please try again.");
-      console.error("Google login error:", error);
+      toast.error("Unable to register with Google. Please try again.");
+      console.error("Login error:", error);
+    } finally {
       setGoogleLoading(false);
     }
   };
@@ -184,9 +183,7 @@ export default function LoginPage() {
               variant="outline"
               className="h-11 w-full rounded-full border-gray-300 bg-white text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100 dark:border-white/20 dark:bg-transparent dark:text-white dark:hover:bg-white/5"
             >
-              {googleLoading
-                ? "Connecting..."
-                : "Continue with Google"}
+              {googleLoading ? "Connecting..." : "Continue with Google"}
             </Button>
           </form>
 

@@ -16,15 +16,9 @@ import {
   Building2,
   CalendarDays,
   ChevronDown,
-  UserRound,
 } from "lucide-react";
 
-import { Button } from "./ui/button";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import LogoIcon from "@/components/LogoIcon";
 import type { UserSession } from "@/type";
 
@@ -163,10 +157,7 @@ export default function Navbar() {
             >
               <Avatar className="h-9 w-9 border border-gold/40">
                 {user.image && (
-                  <AvatarImage
-                    src={user.image}
-                    alt={user.name || "User"}
-                  />
+                  <AvatarImage src={user.image} alt={user.name || "User"} />
                 )}
 
                 <AvatarFallback className="bg-gold text-black">
@@ -188,7 +179,7 @@ export default function Navbar() {
             {profileOpen && (
               <div
                 onMouseLeave={() => !mobile && setProfileOpen(false)}
-                className="absolute right-0 top-full z-[60] mt-3 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl dark:border-white/10 dark:bg-[#111111]"
+                className="absolute right-0 top-full z-60 mt-3 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl dark:border-white/10 dark:bg-[#111111]"
               >
                 {/* User Info */}
                 <div className="border-b border-gray-200 px-4 py-4 dark:border-white/10">
@@ -238,7 +229,6 @@ export default function Navbar() {
                       </Link>
                     );
                   })}
-
                 </div>
 
                 {/* Logout */}
@@ -285,7 +275,6 @@ export default function Navbar() {
     <header className="sticky top-0 z-50">
       <div className="border-b border-gray-200 bg-white/90 backdrop-blur-xl dark:border-white/10 dark:bg-black/90">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-2">
             <LogoIcon className="h-7 w-7" />
@@ -313,7 +302,6 @@ export default function Navbar() {
 
           {/* Right Actions */}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-
             {/* Theme Toggle */}
             <button
               type="button"
@@ -327,9 +315,7 @@ export default function Navbar() {
             </button>
 
             {/* Desktop Auth */}
-            <div className="hidden sm:block">
-              {renderAuthButtons()}
-            </div>
+            <div className="hidden sm:block">{renderAuthButtons()}</div>
 
             {/* Mobile Menu Toggle */}
             <button

@@ -71,7 +71,9 @@ export default function Footer() {
             </span>
           </Link>
 
-          <p className={`mt-3 max-w-[260px] text-sm leading-relaxed ${linkText}`}>
+          <p
+            className={`mt-3 max-w-65 text-sm leading-relaxed ${linkText}`}
+          >
             Book creative spaces by the hour. Built by creators, for creators.
           </p>
 

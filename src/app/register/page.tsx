@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,29 +25,13 @@ function Field({ id, label, className, ...props }: FieldProps) {
         {label}
       </label>
 
-      <Input
-        id={id}
-        className={className}
-        {...props}
-      />
+      <Input id={id} className={className} {...props} />
     </div>
   );
 }
 
 export default function RegisterPage() {
   const router = useRouter();
-
-
-  const searchParams = useSearchParams();
-  
-    const callbackUrl = searchParams.get("callbackUrl");
-  
-    // Prevent unsafe external redirects
-    const redirectUrl =
-      callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")
-        ? callbackUrl
-        : "/";
-  
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -61,8 +45,7 @@ export default function RegisterPage() {
   const inputClass =
     "mt-2 h-11 rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-900 placeholder:text-gray-400 focus-visible:border-gold focus-visible:ring-gold/40 dark:border-white/10 dark:bg-[#141414] dark:text-white dark:placeholder:text-neutral-500";
 
-  const passwordError =
-    password.length > 0 && !PASSWORD_RULE.test(password);
+  const passwordError = password.length > 0 && !PASSWORD_RULE.test(password);
 
   const formValid =
     name.trim().length > 0 &&
@@ -70,15 +53,13 @@ export default function RegisterPage() {
     PASSWORD_RULE.test(password);
 
   // Email registration
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!formValid || loading) return;
 
     setLoading(true);
-    toast.success("Registration Successfull!")
+    toast.success("Registration Successfull!");
 
     try {
       const userData = {
@@ -91,44 +72,42 @@ export default function RegisterPage() {
       const { error } = await authClient.signUp.email(userData);
 
       if (error) {
-        toast.error("Registration failed. Please try again.")
+        toast.error("Registration failed. Please try again.");
         return;
       }
 
       router.push("/login");
       router.refresh();
     } catch (error) {
-       toast.error("Something went wrong. Please try again")
-        console.error("Login error:", error);
-
+      toast.error("Something went wrong. Please try again");
+      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Google login
+  // Google registration
   const handleGoogle = async () => {
     if (googleLoading) return;
 
     setGoogleLoading(true);
-
+    toast.success("Google registration Success!");
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: redirectUrl,
+        callbackURL: "/",
       });
 
       if (error) {
-        toast.error("Google login failed.");
-        setGoogleLoading(false);
+        toast.error("Google registration failed.");
       }
     } catch (error) {
-      toast.error("Unable to login with Google. Please try again.");
-      console.error("Google login error:", error);
+      toast.error("Unable to register with Google. Please try again.");
+      console.error("Login error:", error);
+    } finally {
       setGoogleLoading(false);
     }
   };
-
 
   return (
     <section className="min-h-screen bg-gray-50 transition-colors duration-300 dark:bg-[#0b0b0b]">
@@ -137,10 +116,7 @@ export default function RegisterPage() {
           Create your account
         </h1>
 
-        <form
-          className="mt-8 space-y-5"
-          onSubmit={handleSubmit}
-        >
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
           {/* Name */}
           <Field
             id="name"
@@ -228,19 +204,14 @@ export default function RegisterPage() {
             variant="outline"
             className="h-11 w-full rounded-full border-gray-300 bg-white text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100 dark:border-white/20 dark:bg-transparent dark:text-white dark:hover:bg-white/5"
           >
-            {googleLoading
-              ? "Connecting..."
-              : "Continue With Google"}
+            {googleLoading ? "Connecting..." : "Continue With Google"}
           </Button>
         </form>
 
         {/* Login link */}
         <p className="mt-6 text-sm text-gray-600 dark:text-neutral-400">
           Already have an account?{" "}
-          <Link
-            href="/login"
-            className="font-medium text-gold hover:underline"
-          >
+          <Link href="/login" className="font-medium text-gold hover:underline">
             Login
           </Link>
         </p>
@@ -248,5 +219,3 @@ export default function RegisterPage() {
     </section>
   );
 }
-
-
