@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,18 @@ function Field({ id, label, className, ...props }: FieldProps) {
 
 export default function RegisterPage() {
   const router = useRouter();
+
+
+  const searchParams = useSearchParams();
+  
+    const callbackUrl = searchParams.get("callbackUrl");
+  
+    // Prevent unsafe external redirects
+    const redirectUrl =
+      callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")
+        ? callbackUrl
+        : "/";
+  
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -94,30 +106,29 @@ export default function RegisterPage() {
     }
   };
 
-  // Google registration
+  // Google login
   const handleGoogle = async () => {
     if (googleLoading) return;
 
     setGoogleLoading(true);
-    toast.success("Google registration Success!")
+
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: redirectUrl,
       });
 
       if (error) {
-          toast.error("Google registration failed.")
+        toast.error("Google login failed.");
+        setGoogleLoading(false);
       }
     } catch (error) {
-      toast.error("Unable to register with Google. Please try again.")
-            console.error("Login error:", error);
-      
-      
-    } finally {
+      toast.error("Unable to login with Google. Please try again.");
+      console.error("Google login error:", error);
       setGoogleLoading(false);
     }
   };
+
 
   return (
     <section className="min-h-screen bg-gray-50 transition-colors duration-300 dark:bg-[#0b0b0b]">

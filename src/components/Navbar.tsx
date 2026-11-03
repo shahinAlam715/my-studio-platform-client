@@ -5,10 +5,26 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { Menu, X, Sun, Moon, LogOut } from "lucide-react";
+import {
+  Menu,
+  X,
+  Sun,
+  Moon,
+  LogOut,
+  LayoutDashboard,
+  PlusCircle,
+  Building2,
+  CalendarDays,
+  ChevronDown,
+  UserRound,
+} from "lucide-react";
 
 import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
 import LogoIcon from "@/components/LogoIcon";
 import type { UserSession } from "@/type";
 
@@ -20,12 +36,36 @@ const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
 ];
 
+const USER_MENU = [
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    href: "/add-studio",
+    label: "Add New Studio",
+    icon: PlusCircle,
+  },
+  {
+    href: "/my-listing",
+    label: "My Studio Listings",
+    icon: Building2,
+  },
+  {
+    href: "/my-bookings",
+    label: "My Bookings",
+    icon: CalendarDays,
+  },
+];
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [session, setSession] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
@@ -36,6 +76,7 @@ export default function Navbar() {
     (async () => {
       try {
         const { data, error } = await authClient.getSession();
+
         if (!active) return;
 
         if (error) {
@@ -59,7 +100,6 @@ export default function Navbar() {
     };
   }, []);
 
-  // Only runs on click, so reading resolvedTheme here is safe
   const toggleTheme = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
@@ -69,6 +109,7 @@ export default function Navbar() {
 
     try {
       setSigningOut(true);
+
       const { error } = await authClient.signOut();
 
       if (error) {
@@ -77,7 +118,9 @@ export default function Navbar() {
       }
 
       setSession(null);
+      setProfileOpen(false);
       setMenuOpen(false);
+
       router.push("/login");
       router.refresh();
     } catch (error) {
@@ -89,9 +132,11 @@ export default function Navbar() {
 
   const user = session?.user;
 
+  const isActive = (href: string) =>
+    pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+
   const navLinkClass = (href: string) => {
-    const active =
-      pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+    const active = isActive(href);
 
     return `rounded-lg text-sm transition-colors ${
       active
@@ -106,24 +151,111 @@ export default function Navbar() {
     if (user) {
       return (
         <div className={`flex items-center gap-3 ${mobile ? "flex-wrap" : ""}`}>
-          <Avatar className="h-9 w-9 border border-gold/40">
-            {user.image && (
-              <AvatarImage src={user.image} alt={user.name || "User"} />
-            )}
-            <AvatarFallback className="bg-gold text-black">
-              {user.name?.charAt(0)?.toUpperCase() || "U"}
-            </AvatarFallback>
-          </Avatar>
+          {/* User Profile Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setProfileOpen((prev) => !prev)}
+              onMouseEnter={() => !mobile && setProfileOpen(true)}
+              aria-expanded={profileOpen}
+              aria-label="Open user menu"
+              className="flex items-center gap-2 rounded-full border border-gray-300 p-1 pr-3 transition-colors hover:border-gold dark:border-white/20"
+            >
+              <Avatar className="h-9 w-9 border border-gold/40">
+                {user.image && (
+                  <AvatarImage
+                    src={user.image}
+                    alt={user.name || "User"}
+                  />
+                )}
 
-          <Button
-            type="button"
-            onClick={handleSignout}
-            disabled={signingOut}
-            className="rounded-full bg-gold px-5 text-sm font-semibold text-black hover:bg-gold-soft"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            {signingOut ? "Signing out..." : "Sign Out"}
-          </Button>
+                <AvatarFallback className="bg-gold text-black">
+                  {user.name?.charAt(0)?.toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+
+              <span className="hidden max-w-28 truncate text-sm font-medium text-gray-800 dark:text-white sm:block">
+                {user.name || "User"}
+              </span>
+
+              <ChevronDown
+                className={`h-4 w-4 text-gray-500 transition-transform ${
+                  profileOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {profileOpen && (
+              <div
+                onMouseLeave={() => !mobile && setProfileOpen(false)}
+                className="absolute right-0 top-full z-[60] mt-3 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl dark:border-white/10 dark:bg-[#111111]"
+              >
+                {/* User Info */}
+                <div className="border-b border-gray-200 px-4 py-4 dark:border-white/10">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-11 w-11 border border-gold/40">
+                      {user.image && (
+                        <AvatarImage
+                          src={user.image}
+                          alt={user.name || "User"}
+                        />
+                      )}
+                      <AvatarFallback className="bg-gold text-black">
+                        {user.name?.charAt(0)?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                        {user.name || "User"}
+                      </p>
+                      <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Menu Items */}
+                <div className="p-2">
+                  {USER_MENU.map((item) => {
+                    const Icon = item.icon;
+                    const active = isActive(item.href);
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setProfileOpen(false)}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                          active
+                            ? "bg-gold/10 font-semibold text-gold"
+                            : "text-gray-700 hover:bg-gray-100 hover:text-gold dark:text-gray-300 dark:hover:bg-white/5"
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+
+                </div>
+
+                {/* Logout */}
+                <div className="border-t border-gray-200 p-2 dark:border-white/10">
+                  <button
+                    type="button"
+                    onClick={handleSignout}
+                    disabled={signingOut}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-500/10"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {signingOut ? "Signing out..." : "Logout"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       );
     }
@@ -153,6 +285,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50">
       <div className="border-b border-gray-200 bg-white/90 backdrop-blur-xl dark:border-white/10 dark:bg-black/90">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-2">
             <LogoIcon className="h-7 w-7" />
@@ -180,7 +313,8 @@ export default function Navbar() {
 
           {/* Right Actions */}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            {/* Theme Toggle: both icons rendered, CSS picks one (no hydration mismatch) */}
+
+            {/* Theme Toggle */}
             <button
               type="button"
               onClick={toggleTheme}
@@ -193,17 +327,26 @@ export default function Navbar() {
             </button>
 
             {/* Desktop Auth */}
-            <div className="hidden sm:block">{renderAuthButtons()}</div>
+            <div className="hidden sm:block">
+              {renderAuthButtons()}
+            </div>
 
             {/* Mobile Menu Toggle */}
             <button
               type="button"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
-              onClick={() => setMenuOpen((prev) => !prev)}
+              onClick={() => {
+                setMenuOpen((prev) => !prev);
+                setProfileOpen(false);
+              }}
               className="rounded-full p-2 text-gray-800 transition-colors hover:bg-gray-100 dark:text-white dark:hover:bg-white/10 lg:hidden"
             >
-              {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {menuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>

@@ -12,13 +12,18 @@ export default function MyBookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // The card removes itself after a successful delete
+  const handleRemoved = (id: string) => {
+    setData((current) => current.filter((booking) => booking._id !== id));
+  };
+
   useEffect(() => {
     let ignore = false;
 
     async function loadBookings() {
-      const token = await getTokenFromClient();
-
+      
       try {
+        const token = await getTokenFromClient();
         // Get logged-in user session
         const { data: session } = await authClient.getSession();
 
@@ -33,7 +38,7 @@ export default function MyBookings() {
           `${process.env.NEXT_PUBLIC_API_URL}/bookings/${encodeURIComponent(email)}`,
           {
             headers: {
-              authorization: `Bearer, ${token}`,
+              authorization: `Bearer ${token}`,
             },
             cache: "no-store",
           },
@@ -103,7 +108,11 @@ export default function MyBookings() {
       ) : (
         <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-2">
           {data.map((booking) => (
-            <BookingCard key={booking._id} booking={booking} />
+            <BookingCard
+              key={booking._id}
+              booking={booking}
+              onRemoved={handleRemoved}
+            />
           ))}
         </div>
       )}

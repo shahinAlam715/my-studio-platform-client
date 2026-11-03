@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useRef, useState } from "react";
@@ -17,6 +16,9 @@ import {
 
 import toast from "react-hot-toast";
 import { getTokenFromClient } from "@/lib/getTokenFromClient";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+
 
 const CATEGORY_OPTIONS = [
   { slug: "photo", label: "Photo Studios" },
@@ -35,14 +37,14 @@ const AMENITIES = [
 ];
 
 export default function StudioForm() {
-  // Form reference
+
+const router = useRouter()
+
   const formRef = useRef<HTMLFormElement>(null);
 
   const [category, setCategory] = useState("");
   const [amenities, setAmenities] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState(false);
 
   const inputClass =
     "mt-2 h-11 w-full rounded-lg border-gray-300 bg-white px-4 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus-visible:border-gold focus-visible:ring-gold/40 dark:border-white/10 dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-neutral-500";
@@ -52,107 +54,99 @@ export default function StudioForm() {
 
   const labelClass = "text-sm text-gray-700 dark:text-neutral-300";
 
-  // Toggle amenities
   const toggleAmenity = (amenity: string) => {
     setAmenities((current) =>
       current.includes(amenity)
         ? current.filter((item) => item !== amenity)
-        : [...current, amenity]
+        : [...current, amenity],
     );
   };
 
-  // Handle form submit
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setMessage("");
-    setError(false);
-
-    // Get actual HTML form using useRef
     const form = formRef.current;
 
-    if (!form || !(form instanceof HTMLFormElement)) {
+    if (!form) {
       toast.error("Form not found. Please refresh the page.");
       return;
     }
 
-    // Validate category
     if (!category) {
-      setError(true);
-      setMessage("Please select a studio category.");
+      toast.error("Please select a studio category.");
       return;
     }
 
-    // Create FormData from actual form element
+    // FormData must be created before any await.
     const formData = new FormData(form);
     const formValues = Object.fromEntries(formData.entries());
 
     try {
       setLoading(true);
 
-      // Get authentication token
+      // Get logged-in user information.
+      const { data: session } = await authClient.getSession();
+
+      const ownerEmail = session?.user?.email;
+      const ownerName = session?.user?.name;
+
+      if (!ownerEmail) {
+        throw new Error("Please login first.");
+      }
+
       const token = await getTokenFromClient();
 
       if (!token) {
         throw new Error("Authentication token not found. Please login again.");
       }
 
-      // Prepare studio data
+      const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+      if (!API_URL) {
+        throw new Error("API URL is not configured.");
+      }
+
+      // Prepare studio data using authenticated user's details.
       const studioData = {
         ...formValues,
         category,
         amenities,
+        ownerName: ownerName || "",
+        ownerEmail,
         hourlyRate: Number(formValues.hourlyRate),
         securityDeposit: Number(formValues.securityDeposit) || 0,
         maxCapacity: Number(formValues.maxCapacity) || 0,
       };
 
-      // Send API request
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/studiodata`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(studioData),
-        }
-      );
+      const res = await fetch(`${API_URL}/studiodata`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(studioData),
+      });
 
-      const data = await res.json().catch(() => null);
+      const result = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(
-          data?.message || `Request failed: ${res.status}`
-        );
+        throw new Error(result?.message || `Request failed: ${res.status}`);
       }
 
-      // Success message
       toast.success("Studio published successfully!");
-
-      setMessage("");
-      setError(false);
-
-      // Reset form
+      router.refresh()
       form.reset();
       setCategory("");
       setAmenities([]);
-
+      router.push("/studios-explore")
     } catch (err) {
       console.error("Studio publish error:", err);
 
-      const errorMessage =
+      toast.error(
         err instanceof Error
           ? err.message
-          : "Failed to publish studio. Please try again.";
-
-      toast.error(errorMessage);
-      setMessage(errorMessage);
-      setError(true);
-
+          : "Failed to publish studio. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -164,13 +158,12 @@ export default function StudioForm() {
       onSubmit={handleSubmit}
       className="mt-8 space-y-5 rounded-2xl border border-gray-200 bg-gray-50 p-6 transition-colors duration-300 sm:p-8 dark:border-white/5 dark:bg-[#141414]"
     >
-      {/* Title | Category */}
+      {/* Title and Category */}
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="title" className={labelClass}>
-            Title
+            Studio Title
           </label>
-
           <Input
             id="title"
             name="title"
@@ -185,7 +178,6 @@ export default function StudioForm() {
           <label htmlFor="category" className={labelClass}>
             Category
           </label>
-
           <Select
             value={category}
             onValueChange={(value) => setCategory(value ?? "")}
@@ -208,12 +200,11 @@ export default function StudioForm() {
       {/* Rates */}
       <div className="grid gap-5 sm:grid-cols-3">
         <div>
-          <label htmlFor="hourly-rate" className={labelClass}>
-            Hourly rate ($)
+          <label htmlFor="hourlyRate" className={labelClass}>
+            Hourly Rate ($)
           </label>
-
           <Input
-            id="hourly-rate"
+            id="hourlyRate"
             name="hourlyRate"
             type="number"
             min="0"
@@ -224,12 +215,11 @@ export default function StudioForm() {
         </div>
 
         <div>
-          <label htmlFor="security-deposit" className={labelClass}>
-            Security deposit ($)
+          <label htmlFor="securityDeposit" className={labelClass}>
+            Security Deposit ($)
           </label>
-
           <Input
-            id="security-deposit"
+            id="securityDeposit"
             name="securityDeposit"
             type="number"
             min="0"
@@ -239,15 +229,15 @@ export default function StudioForm() {
         </div>
 
         <div>
-          <label htmlFor="max-capacity" className={labelClass}>
-            Max capacity
+          <label htmlFor="maxCapacity" className={labelClass}>
+            Max Capacity
           </label>
-
           <Input
-            id="max-capacity"
+            id="maxCapacity"
             name="maxCapacity"
             type="number"
             min="1"
+            required
             placeholder="0"
             className={inputClass}
           />
@@ -257,9 +247,8 @@ export default function StudioForm() {
       {/* Location */}
       <div>
         <label htmlFor="location" className={labelClass}>
-          Location / address
+          Location / Address
         </label>
-
         <Input
           id="location"
           name="location"
@@ -272,12 +261,11 @@ export default function StudioForm() {
 
       {/* Image URL */}
       <div>
-        <label htmlFor="image-url" className={labelClass}>
+        <label htmlFor="imageUrl" className={labelClass}>
           Image URL
         </label>
-
         <Input
-          id="image-url"
+          id="imageUrl"
           name="imageUrl"
           type="url"
           placeholder="https://example.com/image.jpg"
@@ -287,9 +275,7 @@ export default function StudioForm() {
 
       {/* Amenities */}
       <fieldset>
-        <legend className={labelClass}>
-          Amenities
-        </legend>
+        <legend className={labelClass}>Amenities</legend>
 
         <div className="mt-2.5 flex flex-wrap gap-2.5">
           {AMENITIES.map((amenity) => {
@@ -317,9 +303,8 @@ export default function StudioForm() {
       {/* Overview */}
       <div>
         <label htmlFor="overview" className={labelClass}>
-          Detailed overview
+          Detailed Overview
         </label>
-
         <Textarea
           id="overview"
           name="overview"
@@ -328,48 +313,10 @@ export default function StudioForm() {
         />
       </div>
 
-      {/* Owner */}
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="owner-name" className={labelClass}>
-            Owner name
-          </label>
-
-          <Input
-            id="owner-name"
-            name="ownerName"
-            type="text"
-            defaultValue="Rafi Ahmed"
-            className={inputClass}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="owner-email" className={labelClass}>
-            Owner email
-          </label>
-
-          <Input
-            id="owner-email"
-            name="ownerEmail"
-            type="email"
-            defaultValue="rafi@example.com"
-            className={inputClass}
-          />
-        </div>
-      </div>
-
-      {/* Success / Error Message */}
-      {message && (
-        <p
-          role="status"
-          className={`text-sm font-medium ${
-            error ? "text-red-500" : "text-green-500"
-          }`}
-        >
-          {message}
-        </p>
-      )}
+      {/* Owner information is taken from the logged-in account. */}
+      <p className="text-xs text-gray-500 dark:text-neutral-400">
+        Your studio will be published under your logged-in account.
+      </p>
 
       {/* Submit */}
       <Button

@@ -46,7 +46,7 @@ export default function BookingButton({ studio }: BookingButtonProps) {
         return;
       }
 
-      // Booking information
+      // Booking information (stored with status "Pending")
       const bookingInfo = {
         userName: user.name,
         email: user.email,
@@ -62,6 +62,7 @@ export default function BookingButton({ studio }: BookingButtonProps) {
         imageUrl: studio.imageUrl,
         ownerName: studio.ownerName,
         ownerEmail: studio.ownerEmail,
+        status: "Pending" as const,
       };
 
       // Send booking request to backend
@@ -89,7 +90,7 @@ export default function BookingButton({ studio }: BookingButtonProps) {
       }
 
       // Booking successful
-      toast.success("Booking successful!");
+      toast.success("Booking requested! Status: Pending");
       router.push("/dashboard");
       router.refresh();
     } catch (error) {

@@ -20,47 +20,51 @@ import type { DeleteStudioProps } from "@/type";
 import toast from "react-hot-toast";
 import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
-export default function DeleteStudio({ id }: DeleteStudioProps) {
+export default function DeleteStudio({ id, onDeleted }: DeleteStudioProps) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
-
-    const token = await getTokenFromClient()
+    setLoading(true);
 
     try {
-      setLoading(true);
+      const token = await getTokenFromClient();
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/studiodata/${id}`,
         {
           method: "DELETE",
-          headers: {
-            authorization: `Bearer ${token}`
-          }
+          headers: token ? { authorization: `Bearer ${token}` } : undefined,
         }
       );
 
-      if (res.ok) {
-         toast.success("Success to delete studio!")
+      if (!res.ok) {
+        throw new Error(`Request failed: ${res.status}`);
       }
 
-      if (!res.ok) {
-        toast.error("Failed to delete studio!");
+      toast.success("Studio deleted successfully!");
+
+      // Inside "My listings" the caller removes the card itself; everywhere
+      // else (studio details page) we leave the page after deleting.
+      if (onDeleted) {
+        setOpen(false);
+        onDeleted();
+        return;
       }
 
       router.push("/studios-explore");
       router.refresh();
     } catch (error) {
       console.error("Delete error:", error);
-      alert("Studio could not be deleted. Please try again.");
+      toast.error("Failed to delete studio!");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger
         render={
           <Button variant="destructive">

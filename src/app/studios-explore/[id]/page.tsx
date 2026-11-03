@@ -11,8 +11,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-import UpdateStudio from "@/components/UpdateStudio";
-import DeleteStudio from "@/components/DeleteStudio";
+
 import BookingButton from "@/components/BookingButton";
 import { authClient } from "@/lib/auth-client";
 import type { DetailsPageProps, StudioDetail } from "@/type";
@@ -150,10 +149,7 @@ export default async function DetailsPage({ params }: DetailsPageProps) {
         </div>
 
         {/* Update / Delete Actions */}
-        <div className="mt-6 flex flex-wrap items-start gap-3">
-          <UpdateStudio studio={data} />
-          <DeleteStudio id={data._id} />
-        </div>
+       
 
         {/* Studio Details */}
         <div className="mt-6 max-w-3xl">

@@ -20,42 +20,68 @@ import {
   Clock,
   Users,
 } from "lucide-react";
-import type { BookingCardProps } from "@/type";
+import type { BookingCardProps, BookingStatus } from "@/type";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { getTokenFromClient } from "@/lib/getTokenFromClient";
 
-export default function BookingCard({ booking }: BookingCardProps) {
-     const [loading, setLoading] = useState(false);
+/** One style per reservation status, so the badge always matches the state. */
+const STATUS_STYLES: Record<BookingStatus, string> = {
+  Pending:
+    "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400",
+  Confirmed:
+    "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-400",
+  Completed:
+    "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400",
+  Cancelled:
+    "border-gray-300 bg-gray-100 text-gray-600 dark:border-white/20 dark:bg-white/5 dark:text-neutral-400",
+};
+
+export default function BookingCard({ booking, onRemoved }: BookingCardProps) {
+  const [loading, setLoading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+
+  // Old documents were saved without a status — they start as "Pending"
+  const [status, setStatus] = useState<BookingStatus>(
+    booking.status ?? "Pending"
+  );
+
   const router = useRouter();
-  
+  const isPending = status === "Pending";
+
+  // Permanently remove the booking document
   const handleDelete = async () => {
+    try {
+      setLoading(true);
 
-    const token = await getTokenFromClient()
+      const token = await getTokenFromClient();
 
-      try {
-          setLoading(true);
-          
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/bookings/${booking._id}`,
         {
-            method: "DELETE",
-            headers: {
-              authorization: `Bearer ${token}`
-            }
+          method: "DELETE",
+          headers: token ? { authorization: `Bearer ${token}` } : undefined,
         }
-    );
-    if (res.ok) {
-      toast.success("Success to delete Booking!")
-    }
-    if (!res.ok) {
-        toast.error("Faild to delete Booking!")
-    }
-    router.push("/studios-explore")
-    router.refresh();
+      );
+
+      if (!res.ok) {
+        throw new Error(`Request failed: ${res.status}`);
+      }
+
+      toast.success("Booking deleted successfully!");
+
+      // Inside My Bookings the card removes itself; otherwise leave the page
+      if (onRemoved) {
+        onRemoved(booking._id);
+        return;
+      }
+
+      router.push("/studios-explore");
+      router.refresh();
     } catch (error) {
-      console.error("Delete error:", error);
-      alert("Studio could not be deleted. Please try again.");
+      console.error("Delete booking error:", error);
+      toast.error("Failed to delete booking!");
     } finally {
       setLoading(false);
     }
@@ -102,11 +128,22 @@ export default function BookingCard({ booking }: BookingCardProps) {
 
       {/* Card Content */}
       <div className="p-4 sm:p-5">
-        {/* Title and Location */}
+        {/* Title, Location and Status */}
         <div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white sm:text-xl">
-            {booking.title}
-          </h3>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white sm:text-xl">
+              {booking.title}
+            </h3>
+
+            {/* Status badge */}
+            <span
+              className={`inline-block shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${
+                STATUS_STYLES[status]
+              }`}
+            >
+              {status}
+            </span>
+          </div>
 
           <p className="mt-2 flex items-center gap-1.5 text-sm text-gray-500 dark:text-neutral-400">
             <MapPin size={15} className="shrink-0 text-amber-500" />
@@ -210,45 +247,49 @@ export default function BookingCard({ booking }: BookingCardProps) {
             </p>
           </div>
 
-          
-          <AlertDialog>
-      <AlertDialogTrigger
-        render={
-         <button
-          
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10"
-          >
-                Delete Booking
-          </button>
-        }
-      />
+          {/* Actions */}
+          <div className="flex flex-wrap items-center gap-2">
 
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            Are you absolutely sure?
-          </AlertDialogTitle>
+            <AlertDialog>
+              <AlertDialogTrigger
+                render={
+                  <button
+                    type="button"
+                    disabled={loading}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10"
+                  >
+                    {loading ? "Deleting..." : "Delete Booking"}
+                  </button>
+                }
+              />
 
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this
-            studio from our servers.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Are you absolutely sure?
+                  </AlertDialogTitle>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>
-            Cancel
-          </AlertDialogCancel>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    this booking from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
 
-          <AlertDialogAction
-            onClick={handleDelete}
-            disabled={loading}
-          >
-            {loading ? "Deleting..." : "Delete"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={loading}>
+                    Cancel
+                  </AlertDialogCancel>
+
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={loading}
+                  >
+                    {loading ? "Deleting..." : "Delete"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
 
       </div>

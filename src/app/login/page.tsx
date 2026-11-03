@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,15 @@ import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const callbackUrl = searchParams.get("callbackUrl");
+
+  // Prevent unsafe external redirects
+  const redirectUrl =
+    callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")
+      ? callbackUrl
+      : "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +38,7 @@ export default function LoginPage() {
     if (loading) return;
 
     setLoading(true);
-    toast.success("Registration Successfull!");
+    setErrorMessage("");
 
     try {
       const { error } = await authClient.signIn.email({
@@ -38,13 +47,17 @@ export default function LoginPage() {
       });
 
       if (error) {
+        setErrorMessage("Invalid email or password!");
         toast.error("Invalid email or password!");
+        return;
       }
 
-      router.push("/");
+      toast.success("Login Successful!");
+
+      router.replace(redirectUrl);
       router.refresh();
     } catch (error) {
-      toast.error("Something went wrong. Please try again");
+      toast.error("Something went wrong. Please try again.");
       console.error("Login error:", error);
     } finally {
       setLoading(false);
@@ -56,20 +69,20 @@ export default function LoginPage() {
     if (googleLoading) return;
 
     setGoogleLoading(true);
-    toast.success("Google registration Success!");
+
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: redirectUrl,
       });
 
       if (error) {
-        toast.error("Google registration failed.");
+        toast.error("Google login failed.");
+        setGoogleLoading(false);
       }
     } catch (error) {
-      toast.error("Unable to register with Google. Please try again.");
-      console.error("Login error:", error);
-    } finally {
+      toast.error("Unable to login with Google. Please try again.");
+      console.error("Google login error:", error);
       setGoogleLoading(false);
     }
   };
@@ -171,7 +184,9 @@ export default function LoginPage() {
               variant="outline"
               className="h-11 w-full rounded-full border-gray-300 bg-white text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100 dark:border-white/20 dark:bg-transparent dark:text-white dark:hover:bg-white/5"
             >
-              {googleLoading ? "Connecting..." : "Continue with Google"}
+              {googleLoading
+                ? "Connecting..."
+                : "Continue with Google"}
             </Button>
           </form>
 

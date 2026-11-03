@@ -45,6 +45,13 @@ export type StudioDetail = {
   reviews?: StudioReview[];
 };
 
+/** One raw document from `GET /studiodata` — same as `StudioDetail`, but the
+ *  `_id` may arrive as extended JSON and numeric fields may arrive as numbers. */
+export type StudioRecord = Omit<StudioDetail, "_id"> & {
+  _id: string | { $oid: string };
+  hourlyRate: string | number;
+};
+
 /** Card view-model rendered by the home and explore grids. */
 export type Studio = {
   id: string;
@@ -56,6 +63,13 @@ export type Studio = {
   instantBook?: boolean;
   image?: string;
 };
+
+/** Reservation lifecycle shown on the My Bookings page. */
+export type BookingStatus =
+  | "Pending"
+  | "Confirmed"
+  | "Completed"
+  | "Cancelled";
 
 /** Booking returned by `GET /bookings`. */
 export interface IBooking {
@@ -74,6 +88,8 @@ export interface IBooking {
   imageUrl: string;
   ownerName: string;
   ownerEmail: string;
+  /** Missing on documents created before statuses existed. */
+  status?: BookingStatus;
 }
 
 /* --------------------------- Shared UI models --------------------------- */
@@ -127,6 +143,9 @@ export type StudioImageProps = {
 
 export type DeleteStudioProps = {
   id: string;
+  /** Called after a successful delete so the caller (e.g. My listings) can
+   *  drop the card instead of navigating away. */
+  onDeleted?: () => void;
 };
 
 export type BookingButtonProps = {
@@ -135,10 +154,14 @@ export type BookingButtonProps = {
 
 export type UpdateStudioProps = {
   studio: StudioDetail;
+  /** Called after a successful update so the caller can refetch its list. */
+  onUpdated?: () => void;
 };
 
 export type BookingCardProps = {
   booking: IBooking;
+  /** Called after a successful delete so My Bookings can drop the card. */
+  onRemoved?: (id: string) => void;
 };
 
 export type DetailsPageProps = {
