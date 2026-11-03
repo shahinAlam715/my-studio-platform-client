@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# StudioSpace – Studio Booking Platform
 
-## Getting Started
+**Live Website:** https://my-studio-platform-client-k9aj.vercel.app
 
-First, run the development server:
+StudioSpace is a modern studio booking platform where users can explore, discover, and book different types of creative spaces. It helps photographers, podcasters, musicians, and other creators find suitable studios based on their needs.
+
+## ✨ Key Features
+
+- **Explore Studios:** Browse different studios, including photography studios, podcast rooms, music suites, sound stages, and art workshops.
+- **Studio Details:** View studio information, descriptions, pricing, location, and available facilities.
+- **Authentication:** Secure user authentication with email and Google sign-in using Better Auth.
+- **Studio Management:** Authenticated users can add, update, and delete their own studio listings.
+- **My Listings:** Users can manage and view the studios they have listed.
+- **Responsive Design:** Fully responsive user interface for desktop, tablet, and mobile devices.
+- **Search & Filtering:** Find studios using search, category, and price filters.
+- **Modern UI:** Clean dark-themed interface with a gold accent color and reusable UI components.
+
+## 🛠️ Technology Stack
+
+### Frontend
+- Next.js
+- React.js
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Lucide React
+- Next Themes
+
+### Authentication & Backend
+- Better Auth
+- Node.js
+- Express.js
+- MongoDB
+
+### Deployment
+- Vercel
+
+## 🚀 Local Setup Instructions
+
+Follow these steps to run the project locally.
+
+### 1. Clone the Repository
+
+```bash
+git clone YOUR_CLIENT_REPOSITORY_URL
+```
+
+### 2. Navigate to the Project Folder
+
+```bash
+cd my-studio-platform-client
+```
+
+### 3. Install Dependencies
+
+```bash
+npm install
+```
+
+### 4. Configure Environment Variables
+
+Create a `.env.local` file in the root directory and add the required environment variables.
+
+```env
+NEXT_PUBLIC_API_URL=YOUR_BACKEND_API_URL
+```
+
+Add any additional Better Auth environment variables required by your project configuration.
+
+### 5. Start the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 6. Open the Website
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Visit:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```text
+https://my-studio-platform-client-k9aj.vercel.app
+```
 
-## Learn More
+## 🔐 Examiner Test Credentials
 
-To learn more about Next.js, take a look at the following resources:
+Use the following credentials to test the application.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Test User Account**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Email: `YOUR_EXAMINER_TEST_EMAIL`
+- Password: `YOUR_EXAMINER_TEST_PASSWORD`
 
-## Deploy on Vercel
+> Replace these placeholders with valid test account credentials before submission.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+my-studio-platform-client/
+├── public/
+├── src/
+│   ├── app/
+│   ├── components/
+│   ├── lib/
+│   └── types/
+├── .env.local
+├── next.config.ts
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+## 📌 Important Notes
+
+- Make sure the backend server is deployed and accessible before testing API-related features.
+- Configure the correct backend API URL in `.env.local`.
+- Never commit private environment variables or sensitive credentials to GitHub.
+- Use the live website link above to access the deployed application.
+
+---
+
+**Developed with ❤️ for creative professionals.**
